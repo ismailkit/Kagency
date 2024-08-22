@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* Importing 5 different Google Fonts */
+
+@font-face {
+    font-family: 'Prequel';
+    src: url('./assets/font/Prequel-bolditalic.woff2') format('woff2'),
+        url('./assets/font/Prequel-bolditalic.woff') format('woff');
+    font-weight: bold;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Prequel';
+    src: url('./assets/font/Prequel-Regular.woff2') format('woff2'),
+        url('./assets/font/Prequel-Regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Prequel';
+    src: url('./assets/font/Prequel-bold.woff2') format('woff2'),
+        url('./assets/font/Prequel-bold.woff') format('woff');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+html {
+    background-image: #fff, url("assets/noise.png");
+    font-size: 10px;
+    @screen md {
+      font-size: 14px;
+    }
+    @screen lg {
+      font-size: 16px;
+    }
+  }
+a {
+    cursor: pointer;
+}
