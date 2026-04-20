@@ -1,0 +1,121 @@
+@import 'tailwindcss';
+
+:root {
+  color-scheme: light;
+  --bg: #f4f4f0;
+  --text: #242424;
+  --surface: #ffffff;
+  --kred-50: #fde7e8;
+  --kred-100: #fbd0d0;
+  --kred-200: #f8a5a7;
+  --kred-300: #f47678;
+  --kred-400: #f14c4e;
+  --kred-500: #ed1d22;
+  --kred-700: #920c0e;
+  --kblack-100: #d4d4d4;
+  --kblack-400: #4f4f4f;
+  --kblack-500: #242424;
+  --kblack-900: #080808;
+}
+
+@theme inline {
+  --font-display: var(--font-display);
+  --font-sans: var(--font-sans);
+  --color-kred-50: var(--kred-50);
+  --color-kred-100: var(--kred-100);
+  --color-kred-200: var(--kred-200);
+  --color-kred-300: var(--kred-300);
+  --color-kred-400: var(--kred-400);
+  --color-kred-500: var(--kred-500);
+  --color-kred-700: var(--kred-700);
+  --color-kblack-100: var(--kblack-100);
+  --color-kblack-400: var(--kblack-400);
+  --color-kblack-500: var(--kblack-500);
+  --color-kblack-900: var(--kblack-900);
+  --color-site: var(--bg);
+}
+
+html {
+  color-scheme: light;
+  font-size: 10px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 1024px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+body {
+  font-family: var(--font-sans);
+  background-size: auto, auto;
+}
+
+.site-shell {
+  width: min(96%, 1440px);
+  margin-inline: auto;
+}
+
+.section-block {
+  position: relative;
+}
+
+.section-block.is-noise::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('/assets/noise.png');
+  background-size: 300px 300px;
+  opacity: 0.24;
+  pointer-events: none;
+}
+
+.section-container {
+  position: relative;
+  z-index: 1;
+  border-color: var(--kblack-500);
+  border-width: 3px;
+  background: var(--surface);
+}
+
+.section-container--normal {
+  border-width: 0;
+  border-radius: 0;
+}
+
+.section-container--center {
+  border-left-width: 3px;
+  border-right-width: 3px;
+  border-top-width: 0;
+  border-bottom-width: 0;
+  border-radius: 0;
+}
+
+.section-container--top {
+  border-left-width: 3px;
+  border-right-width: 3px;
+  border-top-width: 3px;
+  border-bottom-width: 0;
+  border-top-left-radius: 1rem;
+  border-top-right-radius: 1rem;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.section-container--bottom {
+  border-left-width: 3px;
+  border-right-width: 3px;
+  border-top-width: 0;
+  border-bottom-width: 3px;
+  border-radius: 0;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}

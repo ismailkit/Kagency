@@ -1,0 +1,55 @@
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo_data:/data/db
+
+  cms:
+    image: node:22-alpine
+    working_dir: /app
+    command: >
+      sh -c "
+      if [ \"$ENVIRONMENT\" = \"development\" ]; then
+        export WEB_URL=$WEB_URL_DEV;
+        if [ ! -d node_modules ] || [ -z \"$(ls -A node_modules 2>/dev/null)\" ]; then npm install; fi;
+        npm run dev -- --hostname 0.0.0.0 --port 3000;
+      else
+        export WEB_URL=$WEB_URL_PROD;
+        npm ci;
+        npm run build;
+        npm run start -- --hostname 0.0.0.0 --port 3000;
+      fi"
+    restart: unless-stopped
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      DATABASE_URL: mongodb://mongo:27017/kagency
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET:-dev-secret}
+      WEB_URL_DEV: ${WEB_URL_DEV:-http://localhost:3000}
+      WEB_URL_PROD: ${WEB_URL_PROD:-http://localhost:3000}
+      WATCHPACK_POLLING: ${WATCHPACK_POLLING:-500}
+      CHOKIDAR_USEPOLLING: ${CHOKIDAR_USEPOLLING:-true}
+      CHOKIDAR_INTERVAL: ${CHOKIDAR_INTERVAL:-500}
+    ports:
+      - '3000:3000'
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'node -e "const net=require(\"net\");const s=net.connect(3000,\"127.0.0.1\");s.on(\"connect\",()=>{s.end();process.exit(0)});s.on(\"error\",()=>process.exit(1));setTimeout(()=>process.exit(1),2000);"',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    volumes:
+      - ./:/app
+      - cms_node_modules:/app/node_modules
+    depends_on:
+      - mongo
+
+volumes:
+  mongo_data:
+  cms_node_modules:
