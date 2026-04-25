@@ -33,6 +33,21 @@ export const Projects: CollectionConfig = {
       required: true,
     },
     {
+      name: 'category',
+      type: 'select',
+      required: true,
+      options: [
+        { label: 'Design', value: 'design' },
+        { label: 'Development', value: 'development' },
+        { label: 'Brand', value: 'brand' },
+        { label: 'Strategy', value: 'strategy' },
+        { label: 'Other', value: 'other' },
+      ],
+      admin: {
+        description: 'Used to group projects in the Works showcase grid.',
+      },
+    },
+    {
       name: 'summary',
       type: 'textarea',
       required: true,

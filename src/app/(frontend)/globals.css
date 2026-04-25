@@ -16,6 +16,7 @@
   --kblack-400: #4f4f4f;
   --kblack-500: #242424;
   --kblack-900: #080808;
+  --kyellow-500: #ffd700;
 }
 
 @theme inline {
@@ -32,6 +33,8 @@
   --color-kblack-400: var(--kblack-400);
   --color-kblack-500: var(--kblack-500);
   --color-kblack-900: var(--kblack-900);
+  --color-kyellow-500: var(--kyellow-500);
+  --font-handwritten: var(--font-handwritten);
   --color-site: var(--bg);
 }
 
@@ -66,22 +69,44 @@ body {
   position: relative;
 }
 
-.section-block.is-noise::before {
+.section-bg-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.section-block.is-noise::before,
+.section-block.is-noise--gradient::before {
   content: '';
   position: absolute;
   inset: 0;
+  z-index: 1;
   background-image: url('/assets/noise.png');
-  background-size: 300px 300px;
-  opacity: 0.24;
+  background-size: 400px 400px;
   pointer-events: none;
+}
+
+.section-block.is-noise::before {
+  opacity: 0.8;
+}
+
+.section-block.is-noise--gradient::before {
+  opacity: 0.8;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 100%);
 }
 
 .section-container {
   position: relative;
   z-index: 1;
-  border-color: var(--kblack-500);
+  border-style: solid;
+  border-color: var(--section-border, var(--kblack-500));
   border-width: 3px;
-  background: var(--surface);
+}
+
+.section-container.has-gradient-border {
+  border-image: var(--section-border-gradient) 1;
 }
 
 .section-container--normal {
@@ -113,9 +138,41 @@ body {
   border-right-width: 3px;
   border-top-width: 0;
   border-bottom-width: 3px;
+  border-radius: 0 0 1rem 1rem;
+}
+
+/* Scroll-jack sections: no border, full width — layout handled by ScrollJackShell */
+.section-container--scroll-jack {
+  border-width: 0;
   border-radius: 0;
 }
 
 .font-display {
   font-family: var(--font-display);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes bulb-flicker {
+  0%   { opacity: 1; }
+  8%   { opacity: 0.4; }
+  12%  { opacity: 1; }
+  20%  { opacity: 0.2; }
+  25%  { opacity: 0.9; }
+  33%  { opacity: 0.5; }
+  38%  { opacity: 1; }
+  50%  { opacity: 0.3; }
+  55%  { opacity: 1; }
+  65%  { opacity: 0.7; }
+  72%  { opacity: 0.2; }
+  78%  { opacity: 1; }
+  88%  { opacity: 0.6; }
+  100% { opacity: 1; }
 }

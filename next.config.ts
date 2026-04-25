@@ -1,10 +1,5 @@
 import { withPayload } from '@payloadcms/next/withPayload'
 import type { NextConfig } from 'next'
-import path from 'path'
-import { fileURLToPath } from 'url'
-
-const __filename = fileURLToPath(import.meta.url)
-const dirname = path.dirname(__filename)
 const siteURL = new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000')
 
 const nextConfig: NextConfig = {
@@ -15,12 +10,26 @@ const nextConfig: NextConfig = {
         protocol: siteURL.protocol.replace(':', '') as 'http' | 'https',
         hostname: siteURL.hostname,
         port: siteURL.port,
+        pathname: '/api/media/file/**',
+      },
+      // also allow the canonical /media/** path (used in production)
+      {
+        protocol: siteURL.protocol.replace(':', '') as 'http' | 'https',
+        hostname: siteURL.hostname,
+        port: siteURL.port,
         pathname: '/media/**',
       },
-    ],
-    localPatterns: [
+      // allow localhost explicitly so dev works regardless of NEXT_PUBLIC_SITE_URL
       {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3000',
         pathname: '/api/media/file/**',
+      },
+      // Unsplash CDN for seed/placeholder images
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
       },
     ],
   },
@@ -33,9 +42,6 @@ const nextConfig: NextConfig = {
 
     return webpackConfig
   },
-  turbopack: {
-    root: path.resolve(dirname),
-  },
 }
 
-export default withPayload(nextConfig, { devBundleServerPackages: false })
+export default withPayload(nextConfig)

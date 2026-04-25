@@ -214,86 +214,816 @@ export interface Page {
    */
   slug: string;
   excerpt?: string | null;
-  layout: (
-    | {
-        title: string;
-        subtitle: string;
-        image?: (string | null) | Media;
-        cta?: {
-          label?: string | null;
-          href?: string | null;
-        };
-        containerStyle?: ('normal' | 'center' | 'top' | 'bottom') | null;
-        useNoise?: boolean | null;
-        id?: string | null;
-        blockName?: string | null;
-        blockType: 'landingHero';
-      }
-    | {
-        title: string;
-        subtitle?: string | null;
-        containerStyle?: ('normal' | 'center' | 'top' | 'bottom') | null;
-        useNoise?: boolean | null;
-        id?: string | null;
-        blockName?: string | null;
-        blockType: 'pageHero';
-      }
-    | {
-        title: string;
-        featuredOnly?: boolean | null;
-        /**
-         * Leave empty for all matching services.
-         */
-        limit?: number | null;
-        containerStyle?: ('normal' | 'center' | 'top' | 'bottom') | null;
-        useNoise?: boolean | null;
-        id?: string | null;
-        blockName?: string | null;
-        blockType: 'servicesGrid';
-      }
-    | {
-        title: string;
-        featuredOnly?: boolean | null;
-        /**
-         * Leave empty for all matching projects.
-         */
-        limit?: number | null;
-        containerStyle?: ('normal' | 'center' | 'top' | 'bottom') | null;
-        useNoise?: boolean | null;
-        id?: string | null;
-        blockName?: string | null;
-        blockType: 'projectsGrid';
-      }
-    | {
-        title: string;
-        subtitle?: string | null;
-        containerStyle?: ('normal' | 'center' | 'top' | 'bottom') | null;
-        useNoise?: boolean | null;
-        id?: string | null;
-        blockName?: string | null;
-        blockType: 'contactForm';
-      }
-  )[];
-  content?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  seo?: {
-    metaTitle?: string | null;
-    metaDescription?: string | null;
-    metaImage?: (string | null) | Media;
+  /**
+   * Global visual settings applied to the whole page.
+   */
+  pageSettings?: {
+    /**
+     * Dark: header/footer are transparent, logo turns white.
+     */
+    pageTheme?: ('light' | 'dark') | null;
+    noise?: ('none' | 'solid' | 'gradient') | null;
+    /**
+     * Stacked bottom-to-top like Figma. First layer = bottom of stack.
+     */
+    backgrounds?:
+      | {
+          type: 'solid' | 'gradient' | 'image' | 'svg';
+          color?: string | null;
+          gradient?: string | null;
+          image?: (string | null) | Media;
+          /**
+           * Paste the full <svg>…</svg> markup. The SVG renders inline — not as an <img>. Width/height are set on the <svg> element itself.
+           */
+          svgCode?: string | null;
+          /**
+           * CSS top — relative to the section content area. E.g. 0, 50%, -20px
+           */
+          svgTop?: string | null;
+          /**
+           * CSS right — relative to the section content area. E.g. 0, 10%, -40px
+           */
+          svgRight?: string | null;
+          /**
+           * CSS bottom — relative to the section content area. E.g. 0, 50%, -20px
+           */
+          svgBottom?: string | null;
+          /**
+           * CSS left — relative to the section content area. E.g. 0, 10%, -40px
+           */
+          svgLeft?: string | null;
+          /**
+           * CSS transform applied to the SVG element. E.g. scale(1.2), rotate(45deg), translate(-50%, -50%)
+           */
+          svgTransform?: string | null;
+          /**
+           * Override background position, size and repeat.
+           */
+          enableTransform?: boolean | null;
+          /**
+           * CSS background-size: cover, contain, 100% auto, 200px…
+           */
+          bgSize?: string | null;
+          /**
+           * CSS background-position: center, top left, 50% 25%…
+           */
+          bgPosition?: string | null;
+          bgRepeat?: ('no-repeat' | 'repeat' | 'repeat-x' | 'repeat-y') | null;
+          blendMode?:
+            | (
+                | 'normal'
+                | 'multiply'
+                | 'screen'
+                | 'overlay'
+                | 'darken'
+                | 'lighten'
+                | 'color-dodge'
+                | 'color-burn'
+                | 'hard-light'
+                | 'soft-light'
+                | 'difference'
+                | 'exclusion'
+              )
+            | null;
+          /**
+           * 0 = transparent · 1 = fully opaque
+           */
+          opacity?: number | null;
+          id?: string | null;
+        }[]
+      | null;
   };
+  layout: {
+    containerStyle?: ('normal' | 'center' | 'top' | 'bottom' | 'scroll-jack') | null;
+    borderType?: ('none' | 'solid' | 'gradient') | null;
+    /**
+     * E.g. #ffffff, rgba(255,255,255,0.3)
+     */
+    borderColor?: string | null;
+    /**
+     * Full CSS gradient: linear-gradient(to right, #f00, #00f). Note: border-radius is not preserved.
+     */
+    borderGradient?: string | null;
+    paddingTop?: ('none' | 'sm' | 'md' | 'lg' | 'xl') | null;
+    paddingBottom?: ('none' | 'sm' | 'md' | 'lg' | 'xl') | null;
+    paddingX?: ('none' | 'sm' | 'md' | 'lg' | 'xl') | null;
+    /**
+     * Lets background layers bleed beyond this section into adjacent sections.
+     */
+    allowOverflow?: boolean | null;
+    useNoise?: ('none' | 'solid' | 'gradient') | null;
+    /**
+     * Stacked bottom-to-top like Figma. First layer = bottom of stack.
+     */
+    backgrounds?:
+      | {
+          type: 'solid' | 'gradient' | 'image' | 'svg';
+          color?: string | null;
+          gradient?: string | null;
+          image?: (string | null) | Media;
+          /**
+           * Paste the full <svg>…</svg> markup. The SVG renders inline — not as an <img>. Width/height are set on the <svg> element itself.
+           */
+          svgCode?: string | null;
+          /**
+           * CSS top — relative to the section content area. E.g. 0, 50%, -20px
+           */
+          svgTop?: string | null;
+          /**
+           * CSS right — relative to the section content area. E.g. 0, 10%, -40px
+           */
+          svgRight?: string | null;
+          /**
+           * CSS bottom — relative to the section content area. E.g. 0, 50%, -20px
+           */
+          svgBottom?: string | null;
+          /**
+           * CSS left — relative to the section content area. E.g. 0, 10%, -40px
+           */
+          svgLeft?: string | null;
+          /**
+           * CSS transform applied to the SVG element. E.g. scale(1.2), rotate(45deg), translate(-50%, -50%)
+           */
+          svgTransform?: string | null;
+          /**
+           * Override background position, size and repeat.
+           */
+          enableTransform?: boolean | null;
+          /**
+           * CSS background-size: cover, contain, 100% auto, 200px…
+           */
+          bgSize?: string | null;
+          /**
+           * CSS background-position: center, top left, 50% 25%…
+           */
+          bgPosition?: string | null;
+          bgRepeat?: ('no-repeat' | 'repeat' | 'repeat-x' | 'repeat-y') | null;
+          blendMode?:
+            | (
+                | 'normal'
+                | 'multiply'
+                | 'screen'
+                | 'overlay'
+                | 'darken'
+                | 'lighten'
+                | 'color-dodge'
+                | 'color-burn'
+                | 'hard-light'
+                | 'soft-light'
+                | 'difference'
+                | 'exclusion'
+              )
+            | null;
+          /**
+           * 0 = transparent · 1 = fully opaque
+           */
+          opacity?: number | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Extra vertical space (in vh) that the section captures for scrolling.
+     */
+    scrollJackHeight?: number | null;
+    /**
+     * GSAP scrub lag in seconds. 0 = rigid, higher = softer.
+     */
+    scrollJackScrub?: number | null;
+    /**
+     * Leave empty for block stacking (default).
+     */
+    flexDirection?: ('column' | 'row' | 'row-reverse' | 'column-reverse') | null;
+    flexJustify?: ('start' | 'center' | 'end' | 'between' | 'around' | 'evenly') | null;
+    flexAlign?: ('stretch' | 'start' | 'center' | 'end') | null;
+    flexGap?: ('sm' | 'md' | 'lg' | 'xl') | null;
+    flexWrap?: boolean | null;
+    block?:
+      | (
+          | {
+              title: string;
+              subtitle: string;
+              image?: (string | null) | Media;
+              cta?: {
+                label?: string | null;
+                href?: string | null;
+              };
+              paddingX?: ('none' | 'sm' | 'md' | 'lg' | 'xl') | null;
+              titleAnim?: boolean | null;
+              titleAnimType?:
+                | (
+                    | 'fade'
+                    | 'fade-up'
+                    | 'fade-down'
+                    | 'fade-left'
+                    | 'fade-right'
+                    | 'slide-up'
+                    | 'slide-down'
+                    | 'slide-left'
+                    | 'slide-right'
+                    | 'stagger-words'
+                  )
+                | null;
+              titleAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
+              titleAnimDuration?: number | null;
+              titleAnimDelay?: number | null;
+              subtitleAnim?: boolean | null;
+              subtitleAnimType?:
+                | (
+                    | 'fade'
+                    | 'fade-up'
+                    | 'fade-down'
+                    | 'fade-left'
+                    | 'fade-right'
+                    | 'slide-up'
+                    | 'slide-down'
+                    | 'slide-left'
+                    | 'slide-right'
+                    | 'stagger-words'
+                  )
+                | null;
+              subtitleAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
+              subtitleAnimDuration?: number | null;
+              subtitleAnimDelay?: number | null;
+              ctaAnim?: boolean | null;
+              ctaAnimType?:
+                | (
+                    | 'fade'
+                    | 'fade-up'
+                    | 'fade-down'
+                    | 'fade-left'
+                    | 'fade-right'
+                    | 'slide-up'
+                    | 'slide-down'
+                    | 'slide-left'
+                    | 'slide-right'
+                    | 'stagger-words'
+                  )
+                | null;
+              ctaAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
+              ctaAnimDuration?: number | null;
+              ctaAnimDelay?: number | null;
+              imageAnim?: boolean | null;
+              imageAnimType?:
+                | (
+                    | 'fade'
+                    | 'fade-up'
+                    | 'fade-down'
+                    | 'fade-left'
+                    | 'fade-right'
+                    | 'slide-up'
+                    | 'slide-down'
+                    | 'slide-left'
+                    | 'slide-right'
+                    | 'stagger-words'
+                  )
+                | null;
+              imageAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
+              imageAnimDuration?: number | null;
+              imageAnimDelay?: number | null;
+              id?: string | null;
+              blockName?: string | null;
+              blockType: 'landingHero';
+            }
+          | {
+              title: string;
+              subtitle?: string | null;
+              paddingX?: ('none' | 'sm' | 'md' | 'lg' | 'xl') | null;
+              titleAnim?: boolean | null;
+              titleAnimType?:
+                | (
+                    | 'fade'
+                    | 'fade-up'
+                    | 'fade-down'
+                    | 'fade-left'
+                    | 'fade-right'
+                    | 'slide-up'
+                    | 'slide-down'
+                    | 'slide-left'
+                    | 'slide-right'
+                    | 'stagger-words'
+                  )
+                | null;
+              titleAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
+              titleAnimDuration?: number | null;
+              titleAnimDelay?: number | null;
+              subtitleAnim?: boolean | null;
+              subtitleAnimType?:
+                | (
+                    | 'fade'
+                    | 'fade-up'
+                    | 'fade-down'
+                    | 'fade-left'
+                    | 'fade-right'
+                    | 'slide-up'
+                    | 'slide-down'
+                    | 'slide-left'
+                    | 'slide-right'
+                    | 'stagger-words'
+                  )
+                | null;
+              subtitleAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
+              subtitleAnimDuration?: number | null;
+              subtitleAnimDelay?: number | null;
+              contentAnim?: boolean | null;
+              contentAnimType?:
+                | (
+                    | 'fade'
+                    | 'fade-up'
+                    | 'fade-down'
+                    | 'fade-left'
+                    | 'fade-right'
+                    | 'slide-up'
+                    | 'slide-down'
+                    | 'slide-left'
+                    | 'slide-right'
+                    | 'stagger-words'
+                  )
+                | null;
+              contentAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
+              contentAnimDuration?: number | null;
+              contentAnimDelay?: number | null;
+              id?: string | null;
+              blockName?: string | null;
+              blockType: 'pageHero';
+            }
+          | {
+              title: string;
+              featuredOnly?: boolean | null;
+              /**
+               * Leave empty for all matching services.
+               */
+              limit?: number | null;
+              paddingX?: ('none' | 'sm' | 'md' | 'lg' | 'xl') | null;
+              titleAnim?: boolean | null;
+              titleAnimType?:
+                | (
+                    | 'fade'
+                    | 'fade-up'
+                    | 'fade-down'
+                    | 'fade-left'
+                    | 'fade-right'
+                    | 'slide-up'
+                    | 'slide-down'
+                    | 'slide-left'
+                    | 'slide-right'
+                    | 'stagger-words'
+                  )
+                | null;
+              titleAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
+              titleAnimDuration?: number | null;
+              titleAnimDelay?: number | null;
+              itemsAnim?: boolean | null;
+              itemsAnimType?:
+                | (
+                    | 'fade'
+                    | 'fade-up'
+                    | 'fade-down'
+                    | 'fade-left'
+                    | 'fade-right'
+                    | 'slide-up'
+                    | 'slide-down'
+                    | 'slide-left'
+                    | 'slide-right'
+                    | 'stagger-words'
+                  )
+                | null;
+              itemsAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
+              itemsAnimDuration?: number | null;
+              itemsAnimDelay?: number | null;
+              /**
+               * Delay added per item (0 = all at once).
+               */
+              itemsAnimStagger?: number | null;
+              id?: string | null;
+              blockName?: string | null;
+              blockType: 'servicesGrid';
+            }
+          | {
+              title: string;
+              featuredOnly?: boolean | null;
+              /**
+               * Leave empty for all matching projects.
+               */
+              limit?: number | null;
+              paddingX?: ('none' | 'sm' | 'md' | 'lg' | 'xl') | null;
+              titleAnim?: boolean | null;
+              titleAnimType?:
+                | (
+                    | 'fade'
+                    | 'fade-up'
+                    | 'fade-down'
+                    | 'fade-left'
+                    | 'fade-right'
+                    | 'slide-up'
+                    | 'slide-down'
+                    | 'slide-left'
+                    | 'slide-right'
+                    | 'stagger-words'
+                  )
+                | null;
+              titleAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
+              titleAnimDuration?: number | null;
+              titleAnimDelay?: number | null;
+              itemsAnim?: boolean | null;
+              itemsAnimType?:
+                | (
+                    | 'fade'
+                    | 'fade-up'
+                    | 'fade-down'
+                    | 'fade-left'
+                    | 'fade-right'
+                    | 'slide-up'
+                    | 'slide-down'
+                    | 'slide-left'
+                    | 'slide-right'
+                    | 'stagger-words'
+                  )
+                | null;
+              itemsAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
+              itemsAnimDuration?: number | null;
+              itemsAnimDelay?: number | null;
+              /**
+               * Delay added per item (0 = all at once).
+               */
+              itemsAnimStagger?: number | null;
+              id?: string | null;
+              blockName?: string | null;
+              blockType: 'projectsGrid';
+            }
+          | {
+              title: string;
+              subtitle?: string | null;
+              paddingX?: ('none' | 'sm' | 'md' | 'lg' | 'xl') | null;
+              titleAnim?: boolean | null;
+              titleAnimType?:
+                | (
+                    | 'fade'
+                    | 'fade-up'
+                    | 'fade-down'
+                    | 'fade-left'
+                    | 'fade-right'
+                    | 'slide-up'
+                    | 'slide-down'
+                    | 'slide-left'
+                    | 'slide-right'
+                    | 'stagger-words'
+                  )
+                | null;
+              titleAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
+              titleAnimDuration?: number | null;
+              titleAnimDelay?: number | null;
+              subtitleAnim?: boolean | null;
+              subtitleAnimType?:
+                | (
+                    | 'fade'
+                    | 'fade-up'
+                    | 'fade-down'
+                    | 'fade-left'
+                    | 'fade-right'
+                    | 'slide-up'
+                    | 'slide-down'
+                    | 'slide-left'
+                    | 'slide-right'
+                    | 'stagger-words'
+                  )
+                | null;
+              subtitleAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
+              subtitleAnimDuration?: number | null;
+              subtitleAnimDelay?: number | null;
+              contentAnim?: boolean | null;
+              contentAnimType?:
+                | (
+                    | 'fade'
+                    | 'fade-up'
+                    | 'fade-down'
+                    | 'fade-left'
+                    | 'fade-right'
+                    | 'slide-up'
+                    | 'slide-down'
+                    | 'slide-left'
+                    | 'slide-right'
+                    | 'stagger-words'
+                  )
+                | null;
+              contentAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
+              contentAnimDuration?: number | null;
+              contentAnimDelay?: number | null;
+              id?: string | null;
+              blockName?: string | null;
+              blockType: 'contactForm';
+            }
+          | {
+              title: string;
+              subtitle?: string | null;
+              paddingX?: ('none' | 'sm' | 'md' | 'lg' | 'xl') | null;
+              titleAnim?: boolean | null;
+              titleAnimType?:
+                | (
+                    | 'fade'
+                    | 'fade-up'
+                    | 'fade-down'
+                    | 'fade-left'
+                    | 'fade-right'
+                    | 'slide-up'
+                    | 'slide-down'
+                    | 'slide-left'
+                    | 'slide-right'
+                    | 'stagger-words'
+                  )
+                | null;
+              titleAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
+              titleAnimDuration?: number | null;
+              titleAnimDelay?: number | null;
+              subtitleAnim?: boolean | null;
+              subtitleAnimType?:
+                | (
+                    | 'fade'
+                    | 'fade-up'
+                    | 'fade-down'
+                    | 'fade-left'
+                    | 'fade-right'
+                    | 'slide-up'
+                    | 'slide-down'
+                    | 'slide-left'
+                    | 'slide-right'
+                    | 'stagger-words'
+                  )
+                | null;
+              subtitleAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
+              subtitleAnimDuration?: number | null;
+              subtitleAnimDelay?: number | null;
+              id?: string | null;
+              blockName?: string | null;
+              blockType: 'ksun';
+            }
+          | {
+              textAlign?: ('left' | 'center' | 'right') | null;
+              contentWidth?: ('sm' | 'md' | 'lg' | 'full') | null;
+              columnSplit?: ('50-50' | '60-40' | '40-60' | '70-30' | '30-70') | null;
+              paddingTop?: ('none' | 'sm' | 'md' | 'lg' | 'xl') | null;
+              paddingBottom?: ('none' | 'sm' | 'md' | 'lg' | 'xl') | null;
+              paddingX?: ('none' | 'sm' | 'md' | 'lg' | 'xl') | null;
+              gap?: ('sm' | 'md' | 'lg' | 'xl') | null;
+              eyebrow?: string | null;
+              eyebrowSize?: ('xs' | 'sm' | 'md') | null;
+              eyebrowWeight?: ('normal' | 'medium' | 'semibold' | 'bold') | null;
+              heading?: string | null;
+              headingSize?: ('sm' | 'md' | 'lg' | 'xl' | '2xl') | null;
+              headingStyle?: ('display' | 'sans' | 'handwritten') | null;
+              headingWeight?: ('light' | 'normal' | 'medium' | 'semibold' | 'bold' | 'extrabold' | 'black') | null;
+              body?: string | null;
+              bodySize?: ('sm' | 'md' | 'lg' | 'xl' | '2xl') | null;
+              bodyWeight?: ('light' | 'normal' | 'medium' | 'semibold' | 'bold') | null;
+              headingAccent?: string | null;
+              headingAccentSize?: ('xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl') | null;
+              headingAccentX?: number | null;
+              headingAccentY?: number | null;
+              headingAccentPage?: (string | null) | Page;
+              ctaLabel?: string | null;
+              ctaHref?: string | null;
+              /**
+               * Overrides CTA URL when set.
+               */
+              ctaPage?: (string | null) | Page;
+              ctaStyle?: ('filled' | 'outline' | 'text') | null;
+              image?: (string | null) | Media;
+              imageAspect?: ('landscape' | 'video' | 'square' | 'portrait' | 'auto') | null;
+              /**
+               * CSS color e.g. #ed1d22
+               */
+              colorEyebrow?: string | null;
+              /**
+               * CSS color
+               */
+              colorHeading?: string | null;
+              /**
+               * CSS color
+               */
+              colorBody?: string | null;
+              /**
+               * CSS color
+               */
+              colorCta?: string | null;
+              eyebrowAnim?: boolean | null;
+              eyebrowAnimType?:
+                | (
+                    | 'fade'
+                    | 'fade-up'
+                    | 'fade-down'
+                    | 'fade-left'
+                    | 'fade-right'
+                    | 'slide-up'
+                    | 'slide-down'
+                    | 'slide-left'
+                    | 'slide-right'
+                    | 'stagger-words'
+                  )
+                | null;
+              eyebrowAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
+              eyebrowAnimDuration?: number | null;
+              eyebrowAnimDelay?: number | null;
+              headingAnim?: boolean | null;
+              headingAnimType?:
+                | (
+                    | 'fade'
+                    | 'fade-up'
+                    | 'fade-down'
+                    | 'fade-left'
+                    | 'fade-right'
+                    | 'slide-up'
+                    | 'slide-down'
+                    | 'slide-left'
+                    | 'slide-right'
+                    | 'stagger-words'
+                  )
+                | null;
+              headingAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
+              headingAnimDuration?: number | null;
+              headingAnimDelay?: number | null;
+              accentAnim?: boolean | null;
+              accentAnimType?:
+                | (
+                    | 'fade'
+                    | 'fade-up'
+                    | 'fade-down'
+                    | 'fade-left'
+                    | 'fade-right'
+                    | 'slide-up'
+                    | 'slide-down'
+                    | 'slide-left'
+                    | 'slide-right'
+                    | 'stagger-words'
+                  )
+                | null;
+              accentAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
+              accentAnimDuration?: number | null;
+              accentAnimDelay?: number | null;
+              bodyAnim?: boolean | null;
+              bodyAnimType?:
+                | (
+                    | 'fade'
+                    | 'fade-up'
+                    | 'fade-down'
+                    | 'fade-left'
+                    | 'fade-right'
+                    | 'slide-up'
+                    | 'slide-down'
+                    | 'slide-left'
+                    | 'slide-right'
+                    | 'stagger-words'
+                  )
+                | null;
+              bodyAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
+              bodyAnimDuration?: number | null;
+              bodyAnimDelay?: number | null;
+              ctaAnim?: boolean | null;
+              ctaAnimType?:
+                | (
+                    | 'fade'
+                    | 'fade-up'
+                    | 'fade-down'
+                    | 'fade-left'
+                    | 'fade-right'
+                    | 'slide-up'
+                    | 'slide-down'
+                    | 'slide-left'
+                    | 'slide-right'
+                    | 'stagger-words'
+                  )
+                | null;
+              ctaAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
+              ctaAnimDuration?: number | null;
+              ctaAnimDelay?: number | null;
+              slotAnim?: boolean | null;
+              slotAnimType?:
+                | (
+                    | 'fade'
+                    | 'fade-up'
+                    | 'fade-down'
+                    | 'fade-left'
+                    | 'fade-right'
+                    | 'slide-up'
+                    | 'slide-down'
+                    | 'slide-left'
+                    | 'slide-right'
+                    | 'stagger-words'
+                  )
+                | null;
+              slotAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
+              slotAnimDuration?: number | null;
+              slotAnimDelay?: number | null;
+              id?: string | null;
+              blockName?: string | null;
+              blockType: 'flexContent';
+            }
+          | {
+              /**
+               * Each column cycles through projects of the selected category. Left → right.
+               */
+              columns?:
+                | {
+                    /**
+                     * Display label shown on the card (e.g. "Design").
+                     */
+                    label: string;
+                    category: 'design' | 'development' | 'brand' | 'strategy' | 'other';
+                    /**
+                     * Handwritten title shown below the poster card.
+                     */
+                    cardTitle?: string | null;
+                    /**
+                     * Handwritten subtitle shown below the poster card.
+                     */
+                    cardSubtitle?: string | null;
+                    id?: string | null;
+                  }[]
+                | null;
+              sectionAnim?: boolean | null;
+              sectionAnimType?:
+                | (
+                    | 'fade'
+                    | 'fade-up'
+                    | 'fade-down'
+                    | 'fade-left'
+                    | 'fade-right'
+                    | 'slide-up'
+                    | 'slide-down'
+                    | 'slide-left'
+                    | 'slide-right'
+                    | 'stagger-words'
+                  )
+                | null;
+              sectionAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
+              sectionAnimDuration?: number | null;
+              sectionAnimDelay?: number | null;
+              paddingX?: ('none' | 'sm' | 'md' | 'lg' | 'xl') | null;
+              id?: string | null;
+              blockName?: string | null;
+              blockType: 'landingWorks';
+            }
+          | {
+              /**
+               * Upload a .riv file from the Media library. Takes priority over the URL field.
+               */
+              riveFile?: (string | null) | Media;
+              /**
+               * External URL to a .riv file. Used only when no file is uploaded above.
+               */
+              riveUrl?: string | null;
+              /**
+               * Name of the artboard to render. Leave blank for the default artboard.
+               */
+              artboard?: string | null;
+              /**
+               * Name of the animation to play or scrub. Not needed when using a state machine.
+               */
+              animation?: string | null;
+              /**
+               * Name of the state machine to activate (optional).
+               */
+              stateMachine?: string | null;
+              /**
+               * Name of a 0�100 Number input in the state machine to drive with scroll progress. Recommended for state-machine-based scroll scrub.
+               */
+              scrollInput?: string | null;
+              mode?: ('autoplay' | 'loop' | 'scroll-scrub') | null;
+              /**
+               * Duration of the animation in seconds. Required for direct timeline scrub (when no scroll input is set).
+               */
+              animDuration?: number | null;
+              /**
+               * GSAP ScrollTrigger start, e.g. "top 80%". Scrubbing begins here.
+               */
+              scrubStart?: string | null;
+              /**
+               * GSAP ScrollTrigger end, e.g. "bottom 20%". Scrubbing ends here.
+               */
+              scrubEnd?: string | null;
+              fit?: ('contain' | 'cover' | 'fill' | 'fitWidth' | 'fitHeight' | 'none') | null;
+              alignment?:
+                | (
+                    | 'center'
+                    | 'topLeft'
+                    | 'topCenter'
+                    | 'topRight'
+                    | 'centerLeft'
+                    | 'centerRight'
+                    | 'bottomLeft'
+                    | 'bottomCenter'
+                    | 'bottomRight'
+                  )
+                | null;
+              aspect?: ('16/9' | '4/3' | '1/1' | '9/16' | '3/4' | 'auto') | null;
+              id?: string | null;
+              blockName?: string | null;
+              blockType: 'rive';
+            }
+        )[]
+      | null;
+    id?: string | null;
+    blockName?: string | null;
+    blockType: 'section';
+  }[];
   updatedAt: string;
   createdAt: string;
 }
@@ -339,6 +1069,10 @@ export interface Project {
   title: string;
   slug: string;
   client: string;
+  /**
+   * Used to group projects in the Works showcase grid.
+   */
+  category: 'design' | 'development' | 'brand' | 'strategy' | 'other';
   summary: string;
   coverImage?: (string | null) | Media;
   gallery?:
@@ -541,76 +1275,336 @@ export interface PagesSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
   excerpt?: T;
+  pageSettings?:
+    | T
+    | {
+        pageTheme?: T;
+        noise?: T;
+        backgrounds?:
+          | T
+          | {
+              type?: T;
+              color?: T;
+              gradient?: T;
+              image?: T;
+              svgCode?: T;
+              svgTop?: T;
+              svgRight?: T;
+              svgBottom?: T;
+              svgLeft?: T;
+              svgTransform?: T;
+              enableTransform?: T;
+              bgSize?: T;
+              bgPosition?: T;
+              bgRepeat?: T;
+              blendMode?: T;
+              opacity?: T;
+              id?: T;
+            };
+      };
   layout?:
     | T
     | {
-        landingHero?:
+        section?:
           | T
           | {
-              title?: T;
-              subtitle?: T;
-              image?: T;
-              cta?:
+              containerStyle?: T;
+              borderType?: T;
+              borderColor?: T;
+              borderGradient?: T;
+              paddingTop?: T;
+              paddingBottom?: T;
+              paddingX?: T;
+              allowOverflow?: T;
+              useNoise?: T;
+              backgrounds?:
                 | T
                 | {
-                    label?: T;
-                    href?: T;
+                    type?: T;
+                    color?: T;
+                    gradient?: T;
+                    image?: T;
+                    svgCode?: T;
+                    svgTop?: T;
+                    svgRight?: T;
+                    svgBottom?: T;
+                    svgLeft?: T;
+                    svgTransform?: T;
+                    enableTransform?: T;
+                    bgSize?: T;
+                    bgPosition?: T;
+                    bgRepeat?: T;
+                    blendMode?: T;
+                    opacity?: T;
+                    id?: T;
                   };
-              containerStyle?: T;
-              useNoise?: T;
+              scrollJackHeight?: T;
+              scrollJackScrub?: T;
+              flexDirection?: T;
+              flexJustify?: T;
+              flexAlign?: T;
+              flexGap?: T;
+              flexWrap?: T;
+              block?:
+                | T
+                | {
+                    landingHero?:
+                      | T
+                      | {
+                          title?: T;
+                          subtitle?: T;
+                          image?: T;
+                          cta?:
+                            | T
+                            | {
+                                label?: T;
+                                href?: T;
+                              };
+                          paddingX?: T;
+                          titleAnim?: T;
+                          titleAnimType?: T;
+                          titleAnimEasing?: T;
+                          titleAnimDuration?: T;
+                          titleAnimDelay?: T;
+                          subtitleAnim?: T;
+                          subtitleAnimType?: T;
+                          subtitleAnimEasing?: T;
+                          subtitleAnimDuration?: T;
+                          subtitleAnimDelay?: T;
+                          ctaAnim?: T;
+                          ctaAnimType?: T;
+                          ctaAnimEasing?: T;
+                          ctaAnimDuration?: T;
+                          ctaAnimDelay?: T;
+                          imageAnim?: T;
+                          imageAnimType?: T;
+                          imageAnimEasing?: T;
+                          imageAnimDuration?: T;
+                          imageAnimDelay?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                    pageHero?:
+                      | T
+                      | {
+                          title?: T;
+                          subtitle?: T;
+                          paddingX?: T;
+                          titleAnim?: T;
+                          titleAnimType?: T;
+                          titleAnimEasing?: T;
+                          titleAnimDuration?: T;
+                          titleAnimDelay?: T;
+                          subtitleAnim?: T;
+                          subtitleAnimType?: T;
+                          subtitleAnimEasing?: T;
+                          subtitleAnimDuration?: T;
+                          subtitleAnimDelay?: T;
+                          contentAnim?: T;
+                          contentAnimType?: T;
+                          contentAnimEasing?: T;
+                          contentAnimDuration?: T;
+                          contentAnimDelay?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                    servicesGrid?:
+                      | T
+                      | {
+                          title?: T;
+                          featuredOnly?: T;
+                          limit?: T;
+                          paddingX?: T;
+                          titleAnim?: T;
+                          titleAnimType?: T;
+                          titleAnimEasing?: T;
+                          titleAnimDuration?: T;
+                          titleAnimDelay?: T;
+                          itemsAnim?: T;
+                          itemsAnimType?: T;
+                          itemsAnimEasing?: T;
+                          itemsAnimDuration?: T;
+                          itemsAnimDelay?: T;
+                          itemsAnimStagger?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                    projectsGrid?:
+                      | T
+                      | {
+                          title?: T;
+                          featuredOnly?: T;
+                          limit?: T;
+                          paddingX?: T;
+                          titleAnim?: T;
+                          titleAnimType?: T;
+                          titleAnimEasing?: T;
+                          titleAnimDuration?: T;
+                          titleAnimDelay?: T;
+                          itemsAnim?: T;
+                          itemsAnimType?: T;
+                          itemsAnimEasing?: T;
+                          itemsAnimDuration?: T;
+                          itemsAnimDelay?: T;
+                          itemsAnimStagger?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                    contactForm?:
+                      | T
+                      | {
+                          title?: T;
+                          subtitle?: T;
+                          paddingX?: T;
+                          titleAnim?: T;
+                          titleAnimType?: T;
+                          titleAnimEasing?: T;
+                          titleAnimDuration?: T;
+                          titleAnimDelay?: T;
+                          subtitleAnim?: T;
+                          subtitleAnimType?: T;
+                          subtitleAnimEasing?: T;
+                          subtitleAnimDuration?: T;
+                          subtitleAnimDelay?: T;
+                          contentAnim?: T;
+                          contentAnimType?: T;
+                          contentAnimEasing?: T;
+                          contentAnimDuration?: T;
+                          contentAnimDelay?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                    ksun?:
+                      | T
+                      | {
+                          title?: T;
+                          subtitle?: T;
+                          paddingX?: T;
+                          titleAnim?: T;
+                          titleAnimType?: T;
+                          titleAnimEasing?: T;
+                          titleAnimDuration?: T;
+                          titleAnimDelay?: T;
+                          subtitleAnim?: T;
+                          subtitleAnimType?: T;
+                          subtitleAnimEasing?: T;
+                          subtitleAnimDuration?: T;
+                          subtitleAnimDelay?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                    flexContent?:
+                      | T
+                      | {
+                          textAlign?: T;
+                          contentWidth?: T;
+                          columnSplit?: T;
+                          paddingTop?: T;
+                          paddingBottom?: T;
+                          paddingX?: T;
+                          gap?: T;
+                          eyebrow?: T;
+                          eyebrowSize?: T;
+                          eyebrowWeight?: T;
+                          heading?: T;
+                          headingSize?: T;
+                          headingStyle?: T;
+                          headingWeight?: T;
+                          body?: T;
+                          bodySize?: T;
+                          bodyWeight?: T;
+                          headingAccent?: T;
+                          headingAccentSize?: T;
+                          headingAccentX?: T;
+                          headingAccentY?: T;
+                          headingAccentPage?: T;
+                          ctaLabel?: T;
+                          ctaHref?: T;
+                          ctaPage?: T;
+                          ctaStyle?: T;
+                          image?: T;
+                          imageAspect?: T;
+                          colorEyebrow?: T;
+                          colorHeading?: T;
+                          colorBody?: T;
+                          colorCta?: T;
+                          eyebrowAnim?: T;
+                          eyebrowAnimType?: T;
+                          eyebrowAnimEasing?: T;
+                          eyebrowAnimDuration?: T;
+                          eyebrowAnimDelay?: T;
+                          headingAnim?: T;
+                          headingAnimType?: T;
+                          headingAnimEasing?: T;
+                          headingAnimDuration?: T;
+                          headingAnimDelay?: T;
+                          accentAnim?: T;
+                          accentAnimType?: T;
+                          accentAnimEasing?: T;
+                          accentAnimDuration?: T;
+                          accentAnimDelay?: T;
+                          bodyAnim?: T;
+                          bodyAnimType?: T;
+                          bodyAnimEasing?: T;
+                          bodyAnimDuration?: T;
+                          bodyAnimDelay?: T;
+                          ctaAnim?: T;
+                          ctaAnimType?: T;
+                          ctaAnimEasing?: T;
+                          ctaAnimDuration?: T;
+                          ctaAnimDelay?: T;
+                          slotAnim?: T;
+                          slotAnimType?: T;
+                          slotAnimEasing?: T;
+                          slotAnimDuration?: T;
+                          slotAnimDelay?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                    landingWorks?:
+                      | T
+                      | {
+                          columns?:
+                            | T
+                            | {
+                                label?: T;
+                                category?: T;
+                                cardTitle?: T;
+                                cardSubtitle?: T;
+                                id?: T;
+                              };
+                          sectionAnim?: T;
+                          sectionAnimType?: T;
+                          sectionAnimEasing?: T;
+                          sectionAnimDuration?: T;
+                          sectionAnimDelay?: T;
+                          paddingX?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                    rive?:
+                      | T
+                      | {
+                          riveFile?: T;
+                          riveUrl?: T;
+                          artboard?: T;
+                          animation?: T;
+                          stateMachine?: T;
+                          scrollInput?: T;
+                          mode?: T;
+                          animDuration?: T;
+                          scrubStart?: T;
+                          scrubEnd?: T;
+                          fit?: T;
+                          alignment?: T;
+                          aspect?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                  };
               id?: T;
               blockName?: T;
             };
-        pageHero?:
-          | T
-          | {
-              title?: T;
-              subtitle?: T;
-              containerStyle?: T;
-              useNoise?: T;
-              id?: T;
-              blockName?: T;
-            };
-        servicesGrid?:
-          | T
-          | {
-              title?: T;
-              featuredOnly?: T;
-              limit?: T;
-              containerStyle?: T;
-              useNoise?: T;
-              id?: T;
-              blockName?: T;
-            };
-        projectsGrid?:
-          | T
-          | {
-              title?: T;
-              featuredOnly?: T;
-              limit?: T;
-              containerStyle?: T;
-              useNoise?: T;
-              id?: T;
-              blockName?: T;
-            };
-        contactForm?:
-          | T
-          | {
-              title?: T;
-              subtitle?: T;
-              containerStyle?: T;
-              useNoise?: T;
-              id?: T;
-              blockName?: T;
-            };
-      };
-  content?: T;
-  seo?:
-    | T
-    | {
-        metaTitle?: T;
-        metaDescription?: T;
-        metaImage?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -638,6 +1632,7 @@ export interface ProjectsSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
   client?: T;
+  category?: T;
   summary?: T;
   coverImage?: T;
   gallery?:

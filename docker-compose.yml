@@ -15,7 +15,7 @@ services:
       if [ \"$ENVIRONMENT\" = \"development\" ]; then
         export WEB_URL=$WEB_URL_DEV;
         if [ ! -d node_modules ] || [ -z \"$(ls -A node_modules 2>/dev/null)\" ]; then npm install; fi;
-        npm run dev -- --hostname 0.0.0.0 --port 3000;
+        npm run dev:docker -- --hostname 0.0.0.0 --port 3000;
       else
         export WEB_URL=$WEB_URL_PROD;
         npm ci;

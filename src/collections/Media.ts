@@ -37,6 +37,6 @@ export const Media: CollectionConfig = {
         width: 1920,
       },
     ],
-    mimeTypes: ['image/*', 'video/*'],
+    mimeTypes: ['image/*', 'video/*', 'application/octet-stream', 'text/plain'],
   },
 }

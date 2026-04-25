@@ -1,5 +1,5 @@
 import { PageBlocks } from '@/components/PageBlocks'
-import { getPage, getProjects, getServices } from '@/lib/cms'
+import { getPage, getProjects, getServices, resolveWorksCategories } from '@/lib/cms'
 import { notFound } from 'next/navigation'
 
 export default async function HomePage() {
@@ -13,5 +13,15 @@ export default async function HomePage() {
     notFound()
   }
 
-  return <PageBlocks blocks={page.layout} services={services} projects={projects} />
+  const projectsByCategory = await resolveWorksCategories(page.layout)
+
+  return (
+    <PageBlocks
+      blocks={page.layout}
+      services={services}
+      projects={projects}
+      projectsByCategory={projectsByCategory}
+      pageSettings={page.pageSettings}
+    />
+  )
 }
