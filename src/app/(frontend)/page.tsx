@@ -1,12 +1,19 @@
 import { PageBlocks } from '@/components/PageBlocks'
-import { getPage, getProjects, getServices, resolveWorksCategories } from '@/lib/cms'
+import {
+  getPage,
+  getProjects,
+  getServices,
+  getTestimonials,
+  resolveWorksCategories,
+} from '@/lib/cms'
 import { notFound } from 'next/navigation'
 
 export default async function HomePage() {
-  const [page, services, projects] = await Promise.all([
+  const [page, services, projects, testimonials] = await Promise.all([
     getPage('home'),
     getServices(),
     getProjects(),
+    getTestimonials(),
   ])
 
   if (!page?.layout || page.layout.length === 0) {
@@ -20,6 +27,7 @@ export default async function HomePage() {
       blocks={page.layout}
       services={services}
       projects={projects}
+      testimonials={testimonials}
       projectsByCategory={projectsByCategory}
       pageSettings={page.pageSettings}
     />

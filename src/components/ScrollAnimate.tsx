@@ -21,6 +21,11 @@ export type AnimType =
   | 'slide-down'
   | 'slide-left'
   | 'slide-right'
+  | 'scale'
+  | 'scale-up'
+  | 'scale-down'
+  | 'scale-left'
+  | 'scale-right'
   | 'stagger-words'
 
 export type AnimEasing = 'ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring'
@@ -33,6 +38,12 @@ export interface ScrollAnimateProps {
   duration?: number
   /** Delay in milliseconds */
   delay?: number
+  /** GSAP ScrollTrigger start string. Default 'top 95%' */
+  scrollStart?: string
+  /** GSAP ScrollTrigger end string. Default 'top 65%' */
+  scrollEnd?: string
+  /** GSAP scrub lag in seconds. Default 1 */
+  scrubStrength?: number
   /** HTML tag to render as (defaults to div) */
   as?: 'div' | 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'span' | 'section' | 'li'
   className?: string
@@ -52,7 +63,13 @@ const EASE_MAP: Record<AnimEasing, string> = {
   spring: 'back.out(1.5)',
 }
 
-type GsapVars = { opacity?: number; x?: number; y?: number }
+type GsapVars = {
+  opacity?: number
+  x?: number
+  y?: number
+  scale?: number
+  transformOrigin?: string
+}
 
 function buildFromVars(type: AnimType): GsapVars {
   switch (type) {
@@ -74,6 +91,16 @@ function buildFromVars(type: AnimType): GsapVars {
       return { opacity: 0, x: 90 }
     case 'slide-right':
       return { opacity: 0, x: -90 }
+    case 'scale':
+      return { opacity: 0, scale: 0.82, transformOrigin: 'center center' }
+    case 'scale-up':
+      return { opacity: 0, scale: 0.84, y: 140, transformOrigin: 'center bottom' }
+    case 'scale-down':
+      return { opacity: 0, scale: 0.84, y: -140, transformOrigin: 'center top' }
+    case 'scale-left':
+      return { opacity: 0, scale: 0.84, x: 140, transformOrigin: 'left center' }
+    case 'scale-right':
+      return { opacity: 0, scale: 0.84, x: -140, transformOrigin: 'right center' }
     case 'stagger-words':
       return {}
   }
@@ -87,6 +114,9 @@ export function ScrollAnimate({
   easing = 'ease-out',
   duration = 600,
   delay = 0,
+  scrollStart = 'top 95%',
+  scrollEnd = 'top 65%',
+  scrubStrength = 1,
   as = 'div',
   className,
   style,
@@ -108,9 +138,9 @@ export function ScrollAnimate({
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: el,
-            start: 'top 95%',
-            end: 'top 65%',
-            scrub: 1,
+            start: scrollStart,
+            end: scrollEnd,
+            scrub: scrubStrength,
           },
         })
         tl.from(words, { opacity: 0, y: 22, ease, stagger: 0.07 })
@@ -122,16 +152,16 @@ export function ScrollAnimate({
           ease,
           scrollTrigger: {
             trigger: el,
-            start: 'top 95%',
-            end: 'top 65%',
-            scrub: 1,
+            start: scrollStart,
+            end: scrollEnd,
+            scrub: scrubStrength,
           },
         })
       }
     })
 
     return () => ctx.revert()
-  }, [enabled, type, easing])
+  }, [enabled, type, easing, scrollStart, scrollEnd, scrubStrength])
 
   const Tag = as as ElementType
 

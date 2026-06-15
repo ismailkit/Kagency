@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 
 import { mediaURL } from '@/lib/cms'
 import type { CMSProject } from '@/lib/cms'
+import { pxClass } from '@/lib/spacing'
 
 // ---------------------------------------------------------------------------
 // Film-lamp SVG (decorative element above each poster card)
@@ -142,9 +143,9 @@ function PosterCard({ column, projects, delay = 0 }: PosterCardProps) {
   const imageSrc = current ? (mediaURL(current.coverImage) ?? null) : null
 
   return (
-    <div className="flex flex-col items-center gap-20">
+    <div className="flex flex-col items-center gap-16">
       {/* Lamp */}
-      <div className="relative w-full max-w-45 mx-auto">
+      <div className="relative w-full max-w-45 mx-auto mb-4">
         <div className="relative z-10 text-white">
           <FilmLamp />
         </div>
@@ -243,14 +244,6 @@ export type LandingWorksProps = {
   sectionAnimDuration?: number
   sectionAnimDelay?: number
   paddingX?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
-}
-
-const pxClass = {
-  none: 'px-0',
-  sm: 'px-4 md:px-6 lg:px-8',
-  md: 'px-6 md:px-10 lg:px-16',
-  lg: 'px-8 md:px-16 lg:px-24',
-  xl: 'px-10 md:px-20 lg:px-32',
 }
 
 export function LandingWorks({

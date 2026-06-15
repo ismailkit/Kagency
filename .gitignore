@@ -47,3 +47,9 @@ node_modules/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Local DB snapshots
+backups/
+#AI
+.agents/
+.github/

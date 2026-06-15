@@ -1,5 +1,9 @@
 import type { CSSProperties, ReactNode } from 'react'
+import { ScrollAnimate } from '@/components/ScrollAnimate'
+import type { AnimType, AnimEasing } from '@/components/ScrollAnimate'
 import { ScrollJackShell } from '@/components/ScrollJackShell'
+import { RiveBackground } from '@/components/RiveBackground'
+import { pxClass as paddingXClass } from '@/lib/spacing'
 
 export type ContainerStyle = 'normal' | 'center' | 'top' | 'bottom' | 'scroll-jack'
 
@@ -45,10 +49,47 @@ export type BackgroundLayer =
       svgLeft?: string
       svgTransform?: string
     }
+  | {
+      type: 'video'
+      videoSrc?: string
+      videoAutoplay?: boolean
+      videoLoop?: boolean
+      videoMuted?: boolean
+      opacity?: number
+      blendMode?: string
+    }
+  | {
+      type: 'rive'
+      riveUrl?: string
+      riveArtboard?: string
+      riveStateMachine?: string
+      riveFit?: 'contain' | 'cover' | 'fill' | 'fitWidth' | 'fitHeight' | 'none' | 'scaleDown'
+      riveAlignment?:
+        | 'center'
+        | 'topLeft'
+        | 'topCenter'
+        | 'topRight'
+        | 'centerLeft'
+        | 'centerRight'
+        | 'bottomLeft'
+        | 'bottomCenter'
+        | 'bottomRight'
+      riveScrubEnabled?: boolean
+      riveScrubProperty?: string
+      riveScrubInputType?: 'number' | 'boolean'
+      riveScrubMin?: number
+      riveScrubMax?: number
+      riveScrubStart?: string
+      riveScrubEnd?: string
+      riveScrubStrength?: number
+      opacity?: number
+      blendMode?: string
+    }
 
 export type NoiseType = 'solid' | 'gradient' | 'none' | boolean | null
 
 type PaddingSize = 'none' | 'sm' | 'md' | 'lg' | 'xl'
+type MinHeightOption = 'auto' | '50vh' | '75vh' | 'screen'
 
 type Props = {
   children: ReactNode
@@ -72,6 +113,13 @@ type Props = {
   scrollJackHeight?: number
   /** Scrub smoothness in seconds (scroll-jack only). Default 1.2. */
   scrollJackScrub?: number
+  /** Animate the section in as it enters the viewport (not used for scroll-jack). */
+  entranceAnim?: boolean
+  entranceType?: AnimType
+  entranceEasing?: AnimEasing
+  entranceDuration?: number
+  minHeightMobile?: MinHeightOption
+  minHeightDesktop?: MinHeightOption
 }
 
 function noiseClass(noise: NoiseType): string {
@@ -133,12 +181,18 @@ const paddingBottomClass: Record<NonNullable<PaddingSize>, string> = {
   xl: 'pb-20 md:pb-32 lg:pb-52',
 }
 
-const paddingXClass: Record<NonNullable<PaddingSize>, string> = {
-  none: 'px-0',
-  sm: 'px-4 md:px-6 lg:px-8',
-  md: 'px-6 md:px-10 lg:px-16',
-  lg: 'px-8 md:px-16 lg:px-24',
-  xl: 'px-10 md:px-20 lg:px-32',
+const minHeightMobileClass: Record<MinHeightOption, string> = {
+  auto: '',
+  '50vh': 'min-h-[50vh]',
+  '75vh': 'min-h-[75vh]',
+  screen: 'min-h-screen',
+}
+
+const minHeightDesktopClass: Record<MinHeightOption, string> = {
+  auto: '',
+  '50vh': 'lg:min-h-[50vh]',
+  '75vh': 'lg:min-h-[75vh]',
+  screen: 'lg:min-h-screen',
 }
 
 function layerStyle(layer: BackgroundLayer): CSSProperties {
@@ -169,16 +223,20 @@ function layerStyle(layer: BackgroundLayer): CSSProperties {
     }
     return s
   }
-  return {
-    backgroundImage: `url(${layer.url})`,
-    backgroundSize: layer.enableTransform && layer.bgSize ? layer.bgSize : 'cover',
-    backgroundPosition: layer.enableTransform && layer.bgPosition ? layer.bgPosition : 'center',
-    backgroundRepeat: (layer.enableTransform && layer.bgRepeat
-      ? layer.bgRepeat
-      : 'no-repeat') as CSSProperties['backgroundRepeat'],
-    opacity: layer.opacity ?? 1,
-    mixBlendMode: blend,
+  if (layer.type === 'image') {
+    return {
+      backgroundImage: `url(${layer.url})`,
+      backgroundSize: layer.enableTransform && layer.bgSize ? layer.bgSize : 'cover',
+      backgroundPosition: layer.enableTransform && layer.bgPosition ? layer.bgPosition : 'center',
+      backgroundRepeat: (layer.enableTransform && layer.bgRepeat
+        ? layer.bgRepeat
+        : 'no-repeat') as CSSProperties['backgroundRepeat'],
+      opacity: layer.opacity ?? 1,
+      mixBlendMode: blend,
+    }
   }
+  // svg and video are rendered as separate elements — not via CSS background
+  return {}
 }
 
 export function SectionBlock({
@@ -201,10 +259,18 @@ export function SectionBlock({
   gap,
   scrollJackHeight = 200,
   scrollJackScrub = 1.2,
+  entranceAnim = false,
+  entranceType = 'scale',
+  entranceEasing = 'ease-out',
+  entranceDuration = 700,
+  minHeightMobile,
+  minHeightDesktop,
 }: Props) {
   const ptClass = paddingTopClass[paddingTop]
   const pbClass = paddingBottomClass[paddingBottom]
   const pxClass = paddingX ? paddingXClass[paddingX] : ''
+  const mhMobileClass = minHeightMobile ? minHeightMobileClass[minHeightMobile] : ''
+  const mhDesktopClass = minHeightDesktop ? minHeightDesktopClass[minHeightDesktop] : ''
   const hasGradientBorder = borderType === 'gradient' && !!borderGradient
   const borderCss: CSSProperties =
     borderType === 'solid' && borderColor
@@ -213,12 +279,19 @@ export function SectionBlock({
         ? ({ '--section-border-gradient': borderGradient } as CSSProperties)
         : {}
 
-  // Split bg layers: non-SVG rendered first, SVG rendered after — all at section-block level
+  // Split bg layers: non-SVG/non-video/non-rive rendered first, SVG + video + rive rendered after
   const outerLayers = backgrounds.filter(
-    (l): l is Exclude<BackgroundLayer, { type: 'svg' }> => l.type !== 'svg',
+    (l): l is Exclude<BackgroundLayer, { type: 'svg' } | { type: 'video' } | { type: 'rive' }> =>
+      l.type !== 'svg' && l.type !== 'video' && l.type !== 'rive',
   )
   const svgLayers = backgrounds.filter(
     (l): l is Extract<BackgroundLayer, { type: 'svg' }> => l.type === 'svg',
+  )
+  const videoLayers = backgrounds.filter(
+    (l): l is Extract<BackgroundLayer, { type: 'video' }> => l.type === 'video',
+  )
+  const riveLayers = backgrounds.filter(
+    (l): l is Extract<BackgroundLayer, { type: 'rive' }> => l.type === 'rive',
   )
 
   const contentEl = direction ? (
@@ -249,6 +322,35 @@ export function SectionBlock({
         {outerLayers.map((layer, i) => (
           <div key={i} aria-hidden="true" className="section-bg-layer" style={layerStyle(layer)} />
         ))}
+        {videoLayers.map((layer, i) => (
+          <div
+            key={`video-${i}`}
+            aria-hidden="true"
+            className="section-bg-layer"
+            style={{
+              overflow: 'hidden',
+              opacity: layer.opacity ?? 1,
+              mixBlendMode: layer.blendMode as CSSProperties['mixBlendMode'] | undefined,
+            }}
+          >
+            {layer.videoSrc && (
+              <video
+                src={layer.videoSrc}
+                autoPlay={layer.videoAutoplay ?? true}
+                loop={layer.videoLoop ?? true}
+                muted={layer.videoMuted ?? true}
+                playsInline
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                }}
+              />
+            )}
+          </div>
+        ))}
         {svgLayers.map((layer, i) => (
           <div
             key={`svg-${i}`}
@@ -269,10 +371,38 @@ export function SectionBlock({
                 left: layer.svgLeft ?? 'auto',
                 ...(layer.svgTransform ? { transform: layer.svgTransform } : {}),
               }}
-              dangerouslySetInnerHTML={{ __html: layer.svgCode }}
+              dangerouslySetInnerHTML={{ __html: layer.svgCode ?? '' }}
             />
           </div>
         ))}
+        {riveLayers.map((layer, i) =>
+          layer.riveUrl ? (
+            <div key={`rive-${i}`} aria-hidden="true" className="section-bg-layer" style={{ overflow: 'hidden' }}>
+              <RiveBackground
+                src={layer.riveUrl}
+                artboard={layer.riveArtboard}
+                stateMachine={layer.riveStateMachine}
+                fit={layer.riveFit ?? 'cover'}
+                alignment={layer.riveAlignment ?? 'center'}
+                opacity={layer.opacity}
+                blendMode={layer.blendMode}
+                scrub={
+                  layer.riveScrubEnabled && layer.riveScrubProperty
+                    ? {
+                        inputName: layer.riveScrubProperty,
+                        inputType: layer.riveScrubInputType,
+                        valueMin: layer.riveScrubMin,
+                        valueMax: layer.riveScrubMax,
+                        scrollStart: layer.riveScrubStart,
+                        scrollEnd: layer.riveScrubEnd,
+                        scrubStrength: layer.riveScrubStrength,
+                      }
+                    : undefined
+                }
+              />
+            </div>
+          ) : null,
+        )}
         {noise && noise !== 'none' && (
           <div
             aria-hidden="true"
@@ -315,9 +445,39 @@ export function SectionBlock({
       className={`section-block ${noiseClass(noise)}`.trim()}
       style={allowOverflow ? { overflow: 'visible' } : undefined}
     >
-      {/* Solid / gradient / image bg layers — z-index: 0, below noise (z=1) */}
+      {/* Solid / gradient / image bg layers */}
       {outerLayers.map((layer, i) => (
         <div key={i} aria-hidden="true" className="section-bg-layer" style={layerStyle(layer)} />
+      ))}
+      {/* Video bg layers */}
+      {videoLayers.map((layer, i) => (
+        <div
+          key={`video-${i}`}
+          aria-hidden="true"
+          className="section-bg-layer"
+          style={{
+            overflow: 'hidden',
+            opacity: layer.opacity ?? 1,
+            mixBlendMode: layer.blendMode as CSSProperties['mixBlendMode'] | undefined,
+          }}
+        >
+          {layer.videoSrc && (
+            <video
+              src={layer.videoSrc}
+              autoPlay={layer.videoAutoplay ?? true}
+              loop={layer.videoLoop ?? true}
+              muted={layer.videoMuted ?? true}
+              playsInline
+              style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+              }}
+            />
+          )}
+        </div>
       ))}
       {/* SVG bg layers — also z-index: 0, siblings of outerLayers.
           Must live here (not inside section-container) so noise (z=1) and
@@ -343,16 +503,55 @@ export function SectionBlock({
               ...(layer.svgTransform ? { transform: layer.svgTransform } : {}),
             }}
             // SVG code comes from the CMS admin — only accessible to canManageContent staff
-            dangerouslySetInnerHTML={{ __html: layer.svgCode }}
+            dangerouslySetInnerHTML={{ __html: layer.svgCode ?? '' }}
           />
         </div>
       ))}
+      {/* Rive animation bg layers */}
+      {riveLayers.map((layer, i) =>
+        layer.riveUrl ? (
+          <div key={`rive-${i}`} aria-hidden="true" className="section-bg-layer" style={{ overflow: 'hidden' }}>
+            <RiveBackground
+              src={layer.riveUrl}
+              artboard={layer.riveArtboard}
+              stateMachine={layer.riveStateMachine}
+              fit={layer.riveFit ?? 'cover'}
+              alignment={layer.riveAlignment ?? 'center'}
+              opacity={layer.opacity}
+              blendMode={layer.blendMode}
+              scrub={
+                layer.riveScrubEnabled && layer.riveScrubProperty
+                  ? {
+                      inputName: layer.riveScrubProperty,
+                      inputType: layer.riveScrubInputType,
+                      valueMin: layer.riveScrubMin,
+                      valueMax: layer.riveScrubMax,
+                      scrollStart: layer.riveScrubStart,
+                      scrollEnd: layer.riveScrubEnd,
+                      scrubStrength: layer.riveScrubStrength,
+                    }
+                  : undefined
+              }
+            />
+          </div>
+        ) : null,
+      )}
       {/* Section content — z-index: 1, always above all bg layers and noise */}
       <div
-        className={`site-shell section-container ${styleClass(styleType)}${hasGradientBorder ? ' has-gradient-border' : ''} ${ptClass} ${pbClass} ${pxClass} ${className}`.trim()}
+        className={`site-shell section-container ${styleClass(styleType)}${hasGradientBorder ? ' has-gradient-border' : ''} ${ptClass} ${pbClass} ${pxClass} ${mhMobileClass} ${mhDesktopClass}${mhMobileClass || mhDesktopClass ? ' flex flex-col justify-center' : ''} ${className}`.trim()}
         style={Object.keys(borderCss).length ? borderCss : undefined}
       >
-        {contentEl}
+        <ScrollAnimate
+          enabled={entranceAnim}
+          type={entranceType}
+          easing={entranceEasing}
+          duration={entranceDuration}
+          scrollStart="top bottom"
+          scrollEnd="top 60%"
+          scrubStrength={0.6}
+        >
+          {contentEl}
+        </ScrollAnimate>
       </div>
     </section>
   )

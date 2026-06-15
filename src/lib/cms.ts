@@ -1,6 +1,8 @@
 const PUBLIC_CMS_URL = process.env.NEXT_PUBLIC_CMS_URL || 'http://localhost:3000'
 const CMS_URL = process.env.CMS_INTERNAL_URL || PUBLIC_CMS_URL
 
+export type { RichTextContent } from './richtext'
+
 type QueryValue = string | number | boolean
 
 function withQuery(path: string, query: Record<string, QueryValue | undefined>) {
@@ -77,6 +79,44 @@ export type BackgroundLayer =
       svgLeft?: string
       svgTransform?: string
     }
+  | {
+      type: 'video'
+      videoSrc?: string
+      videoFile?: CMSMedia | string
+      videoAutoplay?: boolean
+      videoLoop?: boolean
+      videoMuted?: boolean
+      opacity?: number
+      blendMode?: string
+    }
+  | {
+      type: 'rive'
+      riveFile?: CMSMedia | string | null
+      riveUrl?: string
+      riveArtboard?: string
+      riveStateMachine?: string
+      riveFit?: 'contain' | 'cover' | 'fill' | 'fitWidth' | 'fitHeight' | 'none' | 'scaleDown'
+      riveAlignment?:
+        | 'center'
+        | 'topLeft'
+        | 'topCenter'
+        | 'topRight'
+        | 'centerLeft'
+        | 'centerRight'
+        | 'bottomLeft'
+        | 'bottomCenter'
+        | 'bottomRight'
+      riveScrubEnabled?: boolean
+      riveScrubProperty?: string
+      riveScrubInputType?: 'number' | 'boolean'
+      riveScrubMin?: number
+      riveScrubMax?: number
+      riveScrubStart?: string
+      riveScrubEnd?: string
+      riveScrubStrength?: number
+      opacity?: number
+      blendMode?: string
+    }
 
 export type CMSMedia = {
   url?: string
@@ -114,6 +154,8 @@ type SA<P extends string> = AnimProps<P>
 
 export type CMSPageSettings = {
   pageTheme?: 'light' | 'dark'
+  headerTheme?: 'light' | 'dark' | 'inherit'
+  footerTheme?: 'light' | 'dark' | 'inherit'
   noise?: 'solid' | 'gradient' | 'none'
   backgrounds?: BackgroundLayer[]
 }
@@ -136,7 +178,7 @@ export type CMSContentBlock =
       id?: string
       blockType: 'landingHero'
       title: string
-      subtitle: string
+      subtitle: import('./richtext').RichTextContent
       image?: CMSMedia | string
       cta?: { label?: string; href?: string }
       paddingX?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
@@ -148,7 +190,7 @@ export type CMSContentBlock =
       id?: string
       blockType: 'pageHero'
       title: string
-      subtitle?: string
+      subtitle?: import('./richtext').RichTextContent
       paddingX?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
     } & SA<'title'> &
       SA<'subtitle'> &
@@ -177,7 +219,7 @@ export type CMSContentBlock =
       id?: string
       blockType: 'contactForm'
       title: string
-      subtitle?: string
+      subtitle?: import('./richtext').RichTextContent
       paddingX?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
     } & SA<'title'> &
       SA<'subtitle'> &
@@ -206,7 +248,7 @@ export type CMSContentBlock =
       headingSize?: 'sm' | 'md' | 'lg' | 'xl' | '2xl'
       headingStyle?: 'display' | 'sans' | 'handwritten'
       headingWeight?: 'light' | 'normal' | 'medium' | 'semibold' | 'bold' | 'extrabold' | 'black'
-      body?: string
+      body?: import('./richtext').RichTextContent
       bodySize?: 'sm' | 'md' | 'lg' | 'xl' | '2xl'
       bodyWeight?: 'light' | 'normal' | 'medium' | 'semibold' | 'bold'
       ctaLabel?: string
@@ -215,8 +257,13 @@ export type CMSContentBlock =
       ctaStyle?: 'filled' | 'outline' | 'text'
       image?: CMSMedia | string
       imageAspect?: 'square' | 'video' | 'portrait' | 'landscape' | 'auto'
+      imageWidth?: number
+      imageHeight?: number
+      imagePosition?: 'above-title' | 'above-text' | 'below-text'
+      imageAlign?: 'left' | 'center' | 'right'
       colorEyebrow?: string
       colorHeading?: string
+      colorHeadingAccent?: string
       colorBody?: string
       colorCta?: string
       // Scroll animations per element
@@ -315,7 +362,7 @@ export type CMSContentBlock =
       id?: string
       blockType: 'ksun'
       title: string
-      subtitle?: string
+      subtitle?: import('./richtext').RichTextContent
       paddingX?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
     } & SA<'title'> &
       SA<'subtitle'>)
@@ -339,8 +386,7 @@ export type CMSContentBlock =
       artboard?: string
       animation?: string
       stateMachine?: string
-      scrollInput?: string
-      mode?: 'autoplay' | 'loop' | 'scroll-scrub'
+      mode?: 'autoplay' | 'loop'
       fit?: 'contain' | 'cover' | 'fill' | 'fitWidth' | 'fitHeight' | 'none'
       alignment?:
         | 'center'
@@ -353,10 +399,94 @@ export type CMSContentBlock =
         | 'bottomCenter'
         | 'bottomRight'
       aspect?: '16/9' | '4/3' | '1/1' | '9/16' | '3/4' | 'auto'
-      animDuration?: number
-      scrubStart?: string
-      scrubEnd?: string
+      // Scroll transform (flat CMS fields mapped to ScrollTransformConfig in renderer)
+      stEnabled?: boolean
+      stStart?: string
+      stEnd?: string
+      stScrub?: number
+      stXFrom?: number
+      stXTo?: number
+      stYFrom?: number
+      stYTo?: number
+      stScaleFrom?: number
+      stScaleTo?: number
+      stOpacityFrom?: number
+      stOpacityTo?: number
+      stMobileOverride?: boolean
+      stMobileXFrom?: number
+      stMobileXTo?: number
+      stMobileYFrom?: number
+      stMobileYTo?: number
+      stMobileScaleFrom?: number
+      stMobileScaleTo?: number
+      stMobileOpacityFrom?: number
+      stMobileOpacityTo?: number
     }
+  | {
+      id?: string
+      blockType: 'servicesShowcase'
+      services: Array<{
+        eyebrow?: string
+        headline: string
+        body?: import('./richtext').RichTextContent
+        bullets?: Array<{ item: string }>
+      }>
+      vhPerService?: number
+      scrub?: number
+      paddingX?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
+    }
+  | {
+      id?: string
+      blockType: 'consolidationBlock'
+      titleLine1: string
+      titleLine2: string
+      body?: import('./richtext').RichTextContent
+      paddingX?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
+    }
+  | {
+      id?: string
+      blockType: 'testimonialsBlock'
+      title?: string
+      subtitle?: import('./richtext').RichTextContent
+      featuredOnly?: boolean
+      limit?: number
+      paddingX?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
+    }
+  | {
+      id?: string
+      blockType: 'logoCarousel'
+      logos?: Array<{
+        id?: string
+        image?: CMSMedia | string
+        alt?: string
+        href?: string
+        label?: string
+      }>
+      rows?: '1' | '2' | '3'
+      direction?: 'left' | 'right' | 'up' | 'down'
+      alternateRows?: boolean
+      speed?: number
+      gap?: 'sm' | 'md' | 'lg' | 'xl'
+      rowGap?: 'sm' | 'md' | 'lg'
+      logoHeight?: number
+      pauseOnHover?: boolean
+      fadeEdges?: boolean
+      grayscale?: boolean
+      paddingTop?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
+      paddingBottom?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
+      paddingX?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
+    }
+
+export type CMSTestimonial = {
+  id: string
+  quote: string
+  author: string
+  role?: string
+  company?: string
+  avatar?: CMSMedia | string
+  featured?: boolean
+  order?: number
+}
 
 export type CMSSection = {
   id?: string
@@ -368,6 +498,8 @@ export type CMSSection = {
   paddingBottom?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
   paddingX?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
   useNoise?: 'solid' | 'gradient' | 'none' | boolean | null
+  minHeightMobile?: 'auto' | '50vh' | '75vh' | 'screen'
+  minHeightDesktop?: 'auto' | '50vh' | '75vh' | 'screen'
   backgrounds?: BackgroundLayer[]
   borderType?: 'none' | 'solid' | 'gradient'
   borderColor?: string
@@ -462,6 +594,19 @@ export async function getProjectsByCategories(
 
 export async function getSiteSettings() {
   return cmsFetch('/api/globals/site-settings', { depth: 1 })
+}
+
+export async function getTestimonials({
+  featuredOnly,
+  limit,
+}: { featuredOnly?: boolean; limit?: number } = {}) {
+  const data = await cmsFetch<DocsResponse<CMSTestimonial>>('/api/testimonials', {
+    depth: 1,
+    limit: limit ?? 50,
+    sort: 'order',
+    'where[featured][equals]': featuredOnly ? true : undefined,
+  })
+  return data?.docs ?? []
 }
 
 /**

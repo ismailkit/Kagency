@@ -2,7 +2,7 @@
 
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { Alignment, Fit, Layout, useRive, useStateMachineInput } from '@rive-app/react-canvas'
+import { Alignment, Fit, Layout, useRive } from '@rive-app/react-canvas'
 import { useEffect, useRef } from 'react'
 
 if (typeof window !== 'undefined') {
@@ -24,38 +24,58 @@ export type RiveAlignment =
   | 'bottomCenter'
   | 'bottomRight'
 
-export type RiveMode = 'autoplay' | 'loop' | 'scroll-scrub'
+export type RiveMode = 'autoplay' | 'loop'
 
 export type RiveAspect = '16/9' | '4/3' | '1/1' | '9/16' | '3/4' | 'auto'
+
+/**
+ * GSAP scroll-driven transform on the Rive container wrapper.
+ * Desktop (lg+) and mobile values are applied independently via gsap.matchMedia.
+ * Any property left undefined is not animated.
+ */
+export interface ScrollTransformConfig {
+  enabled?: boolean
+  /** ScrollTrigger start. Default: "top bottom" */
+  start?: string
+  /** ScrollTrigger end. Default: "top 20%" */
+  end?: string
+  /** Scrub lag in seconds. 0 = rigid lock to scroll. Default: 1 */
+  scrub?: number
+  // ── Desktop (lg+) from → to ──────────────────────────────────────────────
+  xFrom?: number
+  xTo?: number
+  yFrom?: number
+  yTo?: number
+  scaleFrom?: number
+  scaleTo?: number
+  opacityFrom?: number
+  opacityTo?: number
+  // ── Mobile overrides (fallback to desktop values when omitted) ─────────────
+  mobileXFrom?: number
+  mobileXTo?: number
+  mobileYFrom?: number
+  mobileYTo?: number
+  mobileScaleFrom?: number
+  mobileScaleTo?: number
+  mobileOpacityFrom?: number
+  mobileOpacityTo?: number
+}
 
 export interface RiveBlockProps {
   /** URL to the .riv file */
   riveUrl: string
   /** Optional artboard name (defaults to the file's default artboard) */
   artboard?: string
-  /** Animation name to play / scrub */
+  /** Animation name to play */
   animation?: string
   /** State machine name */
   stateMachine?: string
-  /**
-   * Name of a 0–100 Number input in the state machine to drive with scroll.
-   * When set, scroll progress is mapped to input.value (0 → 100).
-   * When not set, rive.scrub(animation, progress * animDuration) is used.
-   */
-  scrollInput?: string
   mode?: RiveMode
   fit?: RiveFit
   alignment?: RiveAlignment
   aspect?: RiveAspect
-  /**
-   * Duration of the animation in seconds.
-   * Only needed for the direct timeline scrub fallback (no state machine input).
-   */
-  animDuration?: number
-  /** ScrollTrigger start string, e.g. "top 80%" */
-  scrubStart?: string
-  /** ScrollTrigger end string, e.g. "bottom 20%" */
-  scrubEnd?: string
+  /** Scroll-driven CSS transform applied to the container wrapper */
+  scrollTransform?: ScrollTransformConfig
 }
 
 // ─── Maps ────────────────────────────────────────────────────────────────────
@@ -88,86 +108,181 @@ export function RiveBlock({
   artboard,
   animation,
   stateMachine,
-  scrollInput,
   mode = 'autoplay',
   fit = 'contain',
   alignment = 'center',
   aspect = '16/9',
-  animDuration = 2,
-  scrubStart = 'top 80%',
-  scrubEnd = 'bottom 20%',
+  scrollTransform,
 }: RiveBlockProps) {
+  const wrapperRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const isScrollScrub = mode === 'scroll-scrub'
 
-  // For scroll-scrub: autoplay to ensure the animation enters the animator's
-  // active list, then we pause it once loaded and take manual control.
+  // Resolved play target — state machine takes priority over bare animation name
+  const playTarget = stateMachine ?? animation ?? undefined
+
   const { rive, RiveComponent } = useRive({
     src: riveUrl,
     artboard: artboard || undefined,
     animations: !stateMachine && animation ? [animation] : undefined,
     stateMachines: stateMachine ? [stateMachine] : undefined,
-    autoplay: true,
+    // autoplay: false — we gate playback via IntersectionObserver so off-screen
+    // elements never waste CPU and re-plays are predictable.
+    autoplay: false,
     layout: new Layout({
       fit: FIT_MAP[fit] ?? Fit.Contain,
       alignment: ALIGN_MAP[alignment] ?? Alignment.Center,
     }),
   })
 
-  // State machine number input (0–100) driven by scroll progress
-  const smInput = useStateMachineInput(rive, stateMachine ?? '', scrollInput ?? '')
-  // Keep smInput in a ref so the scroll effect never needs it as a dep
-  const smInputRef = useRef(smInput)
-  smInputRef.current = smInput
-
-  // In scroll-scrub mode, pause the animation once rive is ready so it holds
-  // frame 0 and waits for ScrollTrigger to advance it.
+  // Viewport gating — play when ≥10 % visible, pause/stop when hidden
   useEffect(() => {
-    if (!isScrollScrub || !rive) return
-    if (animation && !stateMachine) {
-      rive.pause(animation)
-    }
-  }, [isScrollScrub, rive, animation, stateMachine])
+    if (!rive || !containerRef.current) return
 
-  // Scroll-scrub: drive animation progress via GSAP ScrollTrigger
-  // Uses a proxy tween + scrub so the motion is smooth and not rigid.
-  useEffect(() => {
-    if (!isScrollScrub || !rive || !containerRef.current) return
-
-    const state = { val: 0 }
-    const tween = gsap.to(state, {
-      val: 1,
-      ease: 'none',
-      paused: true,
-      onUpdate() {
-        const p = state.val
-        if (smInputRef.current != null) {
-          // State machine number input approach (Rive-recommended for scroll scrub)
-          smInputRef.current.value = p * 100
-        } else if (animation) {
-          // Direct timeline scrub
-          rive.scrub(animation, p * animDuration)
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            rive.play(playTarget)
+          } else {
+            // pause keeps current frame; stop resets — use stop for one-shot, pause for loop
+            if (mode === 'loop') {
+              rive.pause(playTarget)
+            } else {
+              rive.stop(playTarget)
+            }
+          }
         }
       },
-    })
+      { threshold: 0.1 },
+    )
 
-    const trigger = ScrollTrigger.create({
-      trigger: containerRef.current,
-      start: scrubStart,
-      end: scrubEnd,
-      animation: tween,
-      scrub: 1, // seconds of lag — smooth, not rigid
-    })
+    observer.observe(containerRef.current)
+    return () => observer.disconnect()
+  }, [rive, playTarget, mode])
 
-    // Refresh after setup so positions are calculated against the final layout
-    ScrollTrigger.refresh()
+  // Scroll transform — GSAP fromTo on the wrapper div.
+  // Uses gsap.matchMedia conditions so desktop/mobile tweens are auto-cleaned up.
+  useEffect(() => {
+    if (!scrollTransform?.enabled || !wrapperRef.current) return
+
+    const {
+      start = 'top bottom',
+      end = 'top 20%',
+      scrub = 1,
+      xFrom,
+      xTo = 0,
+      yFrom,
+      yTo = 0,
+      scaleFrom,
+      scaleTo = 1,
+      opacityFrom,
+      opacityTo = 1,
+      mobileXFrom,
+      mobileXTo = 0,
+      mobileYFrom,
+      mobileYTo = 0,
+      mobileScaleFrom,
+      mobileScaleTo = 1,
+      mobileOpacityFrom,
+      mobileOpacityTo = 1,
+    } = scrollTransform
+
+    const el = wrapperRef.current
+    const scrubVal = scrub > 0 ? scrub : true
+
+    const mm = gsap.matchMedia()
+
+    // Both queries share one callback — GSAP passes resolved conditions
+    mm.add({ isDesktop: '(min-width: 1024px)', isMobile: '(max-width: 1023px)' }, (ctx) => {
+      const { isDesktop } = ctx.conditions as { isDesktop: boolean; isMobile: boolean }
+
+      const from: gsap.TweenVars = {}
+      const to: gsap.TweenVars = {}
+
+      if (isDesktop) {
+        if (xFrom !== undefined) {
+          from.x = xFrom
+          to.x = xTo
+        }
+        if (yFrom !== undefined) {
+          from.y = yFrom
+          to.y = yTo
+        }
+        if (scaleFrom !== undefined) {
+          from.scale = scaleFrom
+          to.scale = scaleTo
+        }
+        if (opacityFrom !== undefined) {
+          from.opacity = opacityFrom
+          to.opacity = opacityTo
+        }
+      } else {
+        const mxf = mobileXFrom ?? xFrom
+        const myf = mobileYFrom ?? yFrom
+        const msf = mobileScaleFrom ?? scaleFrom
+        const mof = mobileOpacityFrom ?? opacityFrom
+        if (mxf !== undefined) {
+          from.x = mxf
+          to.x = mobileXTo ?? xTo
+        }
+        if (myf !== undefined) {
+          from.y = myf
+          to.y = mobileYTo ?? yTo
+        }
+        if (msf !== undefined) {
+          from.scale = msf
+          to.scale = mobileScaleTo ?? scaleTo
+        }
+        if (mof !== undefined) {
+          from.opacity = mof
+          to.opacity = mobileOpacityTo ?? opacityTo
+        }
+      }
+
+      if (!Object.keys(from).length) return
+
+      gsap.fromTo(el, from, {
+        ...to,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: el,
+          start,
+          end,
+          scrub: scrubVal,
+          invalidateOnRefresh: true,
+        },
+      })
+
+      // Recalculate positions after layout settles
+      ScrollTrigger.refresh()
+    })
 
     return () => {
-      trigger.kill()
-      tween.kill()
+      mm.revert()
     }
-  }, [isScrollScrub, rive, animation, animDuration, scrubStart, scrubEnd])
-  // smInput intentionally omitted — accessed via smInputRef to avoid trigger recreation
+    // Primitive deps so the effect only re-runs when values actually change
+  }, [
+    scrollTransform?.enabled,
+    scrollTransform?.start,
+    scrollTransform?.end,
+    scrollTransform?.scrub,
+    scrollTransform?.xFrom,
+    scrollTransform?.xTo,
+    scrollTransform?.yFrom,
+    scrollTransform?.yTo,
+    scrollTransform?.scaleFrom,
+    scrollTransform?.scaleTo,
+    scrollTransform?.opacityFrom,
+    scrollTransform?.opacityTo,
+    scrollTransform?.mobileXFrom,
+    scrollTransform?.mobileXTo,
+    scrollTransform?.mobileYFrom,
+    scrollTransform?.mobileYTo,
+    scrollTransform?.mobileScaleFrom,
+    scrollTransform?.mobileScaleTo,
+    scrollTransform?.mobileOpacityFrom,
+    scrollTransform?.mobileOpacityTo,
+  ])
 
   const aspectStyle =
     aspect && aspect !== 'auto'
@@ -175,8 +290,10 @@ export function RiveBlock({
       : { minHeight: '300px' }
 
   return (
-    <div ref={containerRef} className="w-full" style={aspectStyle}>
-      <RiveComponent className="w-full h-full" />
+    <div ref={wrapperRef} className="w-full">
+      <div ref={containerRef} className="w-full" style={aspectStyle}>
+        <RiveComponent className="w-full h-full" />
+      </div>
     </div>
   )
 }

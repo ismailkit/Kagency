@@ -4,8 +4,11 @@ import type { ReactNode } from 'react'
 
 import { mediaURL } from '@/lib/cms'
 import type { CMSMedia } from '@/lib/cms'
+import { richTextToHTML } from '@/lib/richtext'
+import type { RichTextContent } from '@/lib/richtext'
 import { ScrollAnimate } from '@/components/ScrollAnimate'
 import type { AnimType, AnimEasing } from '@/components/ScrollAnimate'
+import { pxClass } from '@/lib/spacing'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -33,7 +36,7 @@ export type FlexContentProps = {
   headingSize?: 'sm' | 'md' | 'lg' | 'xl' | '2xl'
   headingStyle?: 'display' | 'sans' | 'handwritten'
   headingWeight?: 'light' | 'normal' | 'medium' | 'semibold' | 'bold' | 'extrabold' | 'black'
-  body?: string
+  body?: RichTextContent
   bodySize?: 'sm' | 'md' | 'lg' | 'xl' | '2xl'
   bodyWeight?: 'light' | 'normal' | 'medium' | 'semibold' | 'bold'
   ctaLabel?: string
@@ -41,10 +44,19 @@ export type FlexContentProps = {
   ctaStyle?: 'filled' | 'outline' | 'text'
   image?: CMSMedia | string
   imageAspect?: 'square' | 'video' | 'portrait' | 'landscape' | 'auto'
+  /** Custom image width in px. Overrides aspect-ratio sizing. */
+  imageWidth?: number
+  /** Custom image height in px. Used with imageWidth or alone. */
+  imageHeight?: number
+  /** Where to place the image relative to text elements. Default: below-text */
+  imagePosition?: 'above-title' | 'above-text' | 'below-text'
+  /** Horizontal alignment of the image block. Default: left */
+  imageAlign?: 'left' | 'center' | 'right'
 
   // Colors
   colorEyebrow?: string
   colorHeading?: string
+  colorHeadingAccent?: string
   colorBody?: string
   colorCta?: string
 
@@ -127,14 +139,6 @@ const pbClass = {
   xl: 'pb-20 md:pb-32 lg:pb-40',
 }
 
-const pxClass = {
-  none: 'px-0',
-  sm: 'px-4 md:px-6 lg:px-8',
-  md: 'px-6 md:px-10 lg:px-16',
-  lg: 'px-8 md:px-16 lg:px-24',
-  xl: 'px-10 md:px-20 lg:px-32',
-}
-
 const headingSizeClass = {
   sm: 'text-2xl md:text-3xl',
   md: 'text-3xl md:text-4xl',
@@ -155,10 +159,10 @@ const headingWeightClass: Record<string, string> = {
 
 const bodySizeClass: Record<string, string> = {
   sm: 'text-sm',
-  md: 'text-base',
-  lg: 'text-lg',
-  xl: 'text-xl',
-  '2xl': 'text-2xl',
+  md: 'text-base md:text-lg',
+  lg: 'text-lg md:text-xl lg:text-2xl',
+  xl: 'text-xl md:text-2xl lg:text-3xl',
+  '2xl': 'text-2xl md:text-3xl lg:text-4xl',
 }
 
 const bodyWeightClass: Record<string, string> = {
@@ -247,8 +251,13 @@ export function FlexContent({
   ctaStyle = 'filled',
   image,
   imageAspect = 'landscape',
+  imageWidth,
+  imageHeight,
+  imagePosition = 'below-text',
+  imageAlign = 'left',
   colorEyebrow,
   colorHeading,
+  colorHeadingAccent,
   colorBody,
   colorCta,
   children,
@@ -287,6 +296,18 @@ export function FlexContent({
   const isHorizontal = false
   const hasImage = !!imageSrc || !!children
 
+  const imageAlignClass = { left: 'items-start', center: 'items-center', right: 'items-end' }
+
+  // Resolve image sizing: explicit px dims → inline style; otherwise aspect class
+  const hasCustomSize = !!imageWidth || !!imageHeight
+  const imgWrapStyle: React.CSSProperties = hasCustomSize
+    ? {
+        width: imageWidth ? `${imageWidth}px` : undefined,
+        height: imageHeight ? `${imageHeight}px` : undefined,
+      }
+    : {}
+  const imgWrapAspect = hasCustomSize ? '' : (aspectClass[imageAspect ?? 'landscape'] ?? '')
+
   const [textCol, imgCol] = splitCols[columnSplit] ?? splitCols['50-50']
 
   const slotEl = children ? (
@@ -307,17 +328,22 @@ export function FlexContent({
       easing={slotAnimEasing}
       duration={slotAnimDuration}
       delay={slotAnimDelay}
-      className={`relative w-full shrink-0 ${isHorizontal ? imgCol : ''} ${aspectClass[imageAspect ?? 'landscape']}`}
+      // flex column to align the image within its wrapper
+      className={`flex flex-col ${imageAlignClass[imageAlign ?? 'left']} w-full shrink-0 ${isHorizontal ? imgCol : ''}`}
     >
-      <Image
-        src={imageSrc!}
-        alt=""
-        fill={imageAspect !== 'auto'}
-        width={imageAspect === 'auto' ? 1200 : undefined}
-        height={imageAspect === 'auto' ? 800 : undefined}
-        className={`object-cover${imageAspect === 'auto' ? ' w-full h-auto' : ''}`}
-        sizes="(max-width: 768px) 100vw, 50vw"
-      />
+      <div className={`relative ${imgWrapAspect}`} style={imgWrapStyle}>
+        <Image
+          src={imageSrc!}
+          alt=""
+          fill={!hasCustomSize && imageAspect !== 'auto'}
+          width={hasCustomSize ? (imageWidth ?? 1200) : imageAspect === 'auto' ? 1200 : undefined}
+          height={hasCustomSize ? (imageHeight ?? 800) : imageAspect === 'auto' ? 800 : undefined}
+          className={`object-cover${
+            hasCustomSize ? ' w-full h-full' : imageAspect === 'auto' ? ' w-full h-auto' : ''
+          }`}
+          sizes="(max-width: 768px) 100vw, 50vw"
+        />
+      </div>
     </ScrollAnimate>
   ) : null
 
@@ -329,7 +355,7 @@ export function FlexContent({
           className="group inline-flex items-center gap-3"
           style={colorCta ? { color: colorCta } : undefined}
         >
-          <span className="font-display font-bold text-lg uppercase underline underline-offset-4 transition-colors group-hover:text-kred-500">
+          <span className="font-display font-bold text-lg uppercase underline underline-offset-4 transition-colors">
             {ctaLabel}
           </span>
           <svg
@@ -378,63 +404,70 @@ export function FlexContent({
     <div
       className={`flex flex-col ${isHorizontal ? textCol : 'w-full'} ${gapClass[gap ?? 'md']} ${textAlignClass[textAlign ?? 'left']}`}
     >
-      {eyebrow && (
-        <ScrollAnimate
-          enabled={eyebrowAnim}
-          type={eyebrowAnimType}
-          easing={eyebrowAnimEasing}
-          duration={eyebrowAnimDuration}
-          delay={eyebrowAnimDelay}
-          as="p"
-          className={`font-sans uppercase tracking-widest ${eyebrowSizeClass[eyebrowSize]} ${eyebrowWeightClass[eyebrowWeight]}`}
-          style={colorEyebrow ? { color: colorEyebrow } : undefined}
-        >
-          {eyebrow}
-        </ScrollAnimate>
-      )}
-      {heading && (
-        <div className="relative block overflow-visible">
-          <ScrollAnimate
-            enabled={headingAnim}
-            type={headingAnimType}
-            easing={headingAnimEasing}
-            duration={headingAnimDuration}
-            delay={headingAnimDelay}
-            as="h2"
-            className={`${headingSizeClass[headingSize]} ${headingFontClass[headingStyle]} ${headingWeightClass[headingWeight]}`}
-            style={colorHeading ? { color: colorHeading } : undefined}
-          >
-            {heading}
-          </ScrollAnimate>
-          {headingAccent && (
+      {(eyebrow || heading) && (
+        <div className={`flex flex-col gap-2 ${textAlignClass[textAlign ?? 'left']}`}>
+          {eyebrow && (
             <ScrollAnimate
-              enabled={accentAnim}
-              type={accentAnimType}
-              easing={accentAnimEasing}
-              duration={accentAnimDuration}
-              delay={accentAnimDelay}
-              as="span"
-              className="absolute font-handwritten text-kyellow-500 -rotate-12 pointer-events-none"
-              style={{
-                bottom: `${headingAccentY}rem`,
-                right: `${headingAccentX}rem`,
-                fontSize: accentSizeMap[headingAccentSize],
-              }}
+              enabled={eyebrowAnim}
+              type={eyebrowAnimType}
+              easing={eyebrowAnimEasing}
+              duration={eyebrowAnimDuration}
+              delay={eyebrowAnimDelay}
+              as="p"
+              className={`font-sans uppercase tracking-widest ${eyebrowSizeClass[eyebrowSize]} ${eyebrowWeightClass[eyebrowWeight]}`}
+              style={colorEyebrow ? { color: colorEyebrow } : undefined}
             >
-              {headingAccentHref ? (
-                <a
-                  href={headingAccentHref}
-                  className="pointer-events-auto cursor-pointer hover:opacity-70 transition-opacity"
-                >
-                  {headingAccent}
-                </a>
-              ) : (
-                headingAccent
-              )}
+              {eyebrow}
             </ScrollAnimate>
+          )}
+          {heading && (
+            <div className="relative block overflow-visible">
+              <ScrollAnimate
+                enabled={headingAnim}
+                type={headingAnimType}
+                easing={headingAnimEasing}
+                duration={headingAnimDuration}
+                delay={headingAnimDelay}
+                as="h2"
+                className={`${headingSizeClass[headingSize]} ${headingFontClass[headingStyle]} ${headingWeightClass[headingWeight]}`}
+                style={colorHeading ? { color: colorHeading } : undefined}
+              >
+                {heading}
+              </ScrollAnimate>
+              {headingAccent && (
+                <ScrollAnimate
+                  enabled={accentAnim}
+                  type={accentAnimType}
+                  easing={accentAnimEasing}
+                  duration={accentAnimDuration}
+                  delay={accentAnimDelay}
+                  as="span"
+                  className={`absolute font-handwritten -rotate-12 pointer-events-none ${colorHeadingAccent ? '' : 'text-kyellow-500'}`}
+                  style={{
+                    bottom: `${headingAccentY}rem`,
+                    right: `${headingAccentX}rem`,
+                    fontSize: accentSizeMap[headingAccentSize],
+                    ...(colorHeadingAccent ? { color: colorHeadingAccent } : {}),
+                  }}
+                >
+                  {headingAccentHref ? (
+                    <a
+                      href={headingAccentHref}
+                      className="pointer-events-auto cursor-pointer hover:opacity-70 transition-opacity"
+                    >
+                      {headingAccent}
+                    </a>
+                  ) : (
+                    headingAccent
+                  )}
+                </ScrollAnimate>
+              )}
+            </div>
           )}
         </div>
       )}
+      {/* Image injected between heading and body when position = above-text */}
+      {imagePosition === 'above-text' && slotEl}
       {body && (
         <ScrollAnimate
           enabled={bodyAnim}
@@ -442,11 +475,11 @@ export function FlexContent({
           easing={bodyAnimEasing}
           duration={bodyAnimDuration}
           delay={bodyAnimDelay}
-          as="p"
-          className={`font-sans leading-relaxed ${bodySizeClass[bodySize]} ${bodyWeightClass[bodyWeight]}`}
+          as="div"
+          className={`font-sans leading-relaxed richtext ${bodySizeClass[bodySize ?? 'xl']} ${bodyWeightClass[bodyWeight ?? 'normal']}`}
           style={colorBody ? { color: colorBody } : undefined}
         >
-          {body}
+          <span dangerouslySetInnerHTML={{ __html: richTextToHTML(body) }} />
         </ScrollAnimate>
       )}
       {ctaEl && (
@@ -476,10 +509,16 @@ export function FlexContent({
     return <div className={wrapClass}>{textEl}</div>
   }
 
+  // above-text: slotEl is already injected inside textEl between heading and body
+  // above-title: image before the full text block
+  // below-text (default): image after the full text block
+  const pos = imagePosition ?? 'below-text'
+
   return (
     <div className={`${wrapClass} flex flex-col ${gapClass[gap]}`}>
+      {pos === 'above-title' && slotEl}
       {textEl}
-      {slotEl}
+      {pos === 'below-text' && slotEl}
     </div>
   )
 }

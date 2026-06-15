@@ -1,7 +1,10 @@
 'use client'
 
+import { richTextToHTML } from '@/lib/richtext'
+import type { RichTextContent } from '@/lib/richtext'
 import { ScrollAnimate } from '@/components/ScrollAnimate'
 import type { AnimType, AnimEasing } from '@/components/ScrollAnimate'
+import { pxClass } from '@/lib/spacing'
 
 // ---------------------------------------------------------------------------
 // Sunray SVG — thin rays emanating from centre, used as a rotating bg accent
@@ -144,7 +147,7 @@ function SunRay({ className }: { className?: string }) {
 // ---------------------------------------------------------------------------
 export type KsunProps = {
   title: string
-  subtitle?: string
+  subtitle?: RichTextContent
   // Scroll animations
   titleAnim?: boolean
   titleAnimType?: AnimType
@@ -157,14 +160,6 @@ export type KsunProps = {
   subtitleAnimDuration?: number
   subtitleAnimDelay?: number
   paddingX?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
-}
-
-const pxClass = {
-  none: 'px-0',
-  sm: 'px-4 md:px-6 lg:px-8',
-  md: 'px-6 md:px-10 lg:px-16',
-  lg: 'px-8 md:px-16 lg:px-24',
-  xl: 'px-10 md:px-20 lg:px-32',
 }
 
 export function Ksun({
@@ -216,10 +211,10 @@ export function Ksun({
             easing={subtitleAnimEasing}
             duration={subtitleAnimDuration}
             delay={subtitleAnimDelay}
-            as="p"
-            className="mt-6 font-sans font-medium text-2xl leading-tight md:text-3xl"
+            as="div"
+            className="mt-6 font-sans font-medium text-2xl leading-tight md:text-3xl richtext"
           >
-            {subtitle}
+            <span dangerouslySetInnerHTML={{ __html: richTextToHTML(subtitle) }} />
           </ScrollAnimate>
         )}
       </div>

@@ -73,6 +73,7 @@ export interface Config {
     services: Service;
     projects: Project;
     'contact-submissions': ContactSubmission;
+    testimonials: Testimonial;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -86,6 +87,7 @@ export interface Config {
     services: ServicesSelect<false> | ServicesSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     'contact-submissions': ContactSubmissionsSelect<false> | ContactSubmissionsSelect<true>;
+    testimonials: TestimonialsSelect<false> | TestimonialsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -222,16 +224,38 @@ export interface Page {
      * Dark: header/footer are transparent, logo turns white.
      */
     pageTheme?: ('light' | 'dark') | null;
+    /**
+     * Override the page theme for the header only.
+     */
+    headerTheme?: ('inherit' | 'light' | 'dark') | null;
+    /**
+     * Override the page theme for the footer only.
+     */
+    footerTheme?: ('inherit' | 'light' | 'dark') | null;
     noise?: ('none' | 'solid' | 'gradient') | null;
     /**
      * Stacked bottom-to-top like Figma. First layer = bottom of stack.
      */
     backgrounds?:
       | {
-          type: 'solid' | 'gradient' | 'image' | 'svg';
+          type: 'solid' | 'gradient' | 'image' | 'svg' | 'video' | 'rive';
           color?: string | null;
           gradient?: string | null;
           image?: (string | null) | Media;
+          /**
+           * Absolute URL or /media/… path to an mp4/webm file.
+           */
+          videoSrc?: string | null;
+          /**
+           * Pick a video from the Media Library. Takes precedence over Video URL if both are set.
+           */
+          videoFile?: (string | null) | Media;
+          videoAutoplay?: boolean | null;
+          videoLoop?: boolean | null;
+          /**
+           * Must be true for autoplay to work in most browsers.
+           */
+          videoMuted?: boolean | null;
           /**
            * Paste the full <svg>…</svg> markup. The SVG renders inline — not as an <img>. Width/height are set on the <svg> element itself.
            */
@@ -256,6 +280,53 @@ export interface Page {
            * CSS transform applied to the SVG element. E.g. scale(1.2), rotate(45deg), translate(-50%, -50%)
            */
           svgTransform?: string | null;
+          /**
+           * Upload a .riv file from the Media library. Takes priority over the URL field.
+           */
+          riveFile?: (string | null) | Media;
+          /**
+           * External URL to a .riv file. Used only when no file is uploaded above.
+           */
+          riveUrl?: string | null;
+          /**
+           * Leave blank for the file's default artboard.
+           */
+          riveArtboard?: string | null;
+          riveStateMachine?: string | null;
+          riveFit?: ('cover' | 'contain' | 'fill' | 'fitWidth' | 'fitHeight' | 'scaleDown' | 'none') | null;
+          riveAlignment?:
+            | (
+                | 'center'
+                | 'topLeft'
+                | 'topCenter'
+                | 'topRight'
+                | 'centerLeft'
+                | 'centerRight'
+                | 'bottomLeft'
+                | 'bottomCenter'
+                | 'bottomRight'
+              )
+            | null;
+          riveScrubEnabled?: boolean | null;
+          /**
+           * Name of the Number or Boolean state machine input to scrub.
+           */
+          riveScrubProperty?: string | null;
+          riveScrubInputType?: ('number' | 'boolean') | null;
+          riveScrubMin?: number | null;
+          riveScrubMax?: number | null;
+          /**
+           * e.g. "top bottom", "top 80%"
+           */
+          riveScrubStart?: string | null;
+          /**
+           * e.g. "bottom top", "bottom 20%"
+           */
+          riveScrubEnd?: string | null;
+          /**
+           * 0 = snap to scroll. >0 = lag in seconds.
+           */
+          riveScrubStrength?: number | null;
           /**
            * Override background position, size and repeat.
            */
@@ -311,16 +382,32 @@ export interface Page {
      * Lets background layers bleed beyond this section into adjacent sections.
      */
     allowOverflow?: boolean | null;
+    minHeightMobile?: ('auto' | '50vh' | '75vh' | 'screen') | null;
+    minHeightDesktop?: ('auto' | '50vh' | '75vh' | 'screen') | null;
     useNoise?: ('none' | 'solid' | 'gradient') | null;
     /**
      * Stacked bottom-to-top like Figma. First layer = bottom of stack.
      */
     backgrounds?:
       | {
-          type: 'solid' | 'gradient' | 'image' | 'svg';
+          type: 'solid' | 'gradient' | 'image' | 'svg' | 'video' | 'rive';
           color?: string | null;
           gradient?: string | null;
           image?: (string | null) | Media;
+          /**
+           * Absolute URL or /media/… path to an mp4/webm file.
+           */
+          videoSrc?: string | null;
+          /**
+           * Pick a video from the Media Library. Takes precedence over Video URL if both are set.
+           */
+          videoFile?: (string | null) | Media;
+          videoAutoplay?: boolean | null;
+          videoLoop?: boolean | null;
+          /**
+           * Must be true for autoplay to work in most browsers.
+           */
+          videoMuted?: boolean | null;
           /**
            * Paste the full <svg>…</svg> markup. The SVG renders inline — not as an <img>. Width/height are set on the <svg> element itself.
            */
@@ -345,6 +432,53 @@ export interface Page {
            * CSS transform applied to the SVG element. E.g. scale(1.2), rotate(45deg), translate(-50%, -50%)
            */
           svgTransform?: string | null;
+          /**
+           * Upload a .riv file from the Media library. Takes priority over the URL field.
+           */
+          riveFile?: (string | null) | Media;
+          /**
+           * External URL to a .riv file. Used only when no file is uploaded above.
+           */
+          riveUrl?: string | null;
+          /**
+           * Leave blank for the file's default artboard.
+           */
+          riveArtboard?: string | null;
+          riveStateMachine?: string | null;
+          riveFit?: ('cover' | 'contain' | 'fill' | 'fitWidth' | 'fitHeight' | 'scaleDown' | 'none') | null;
+          riveAlignment?:
+            | (
+                | 'center'
+                | 'topLeft'
+                | 'topCenter'
+                | 'topRight'
+                | 'centerLeft'
+                | 'centerRight'
+                | 'bottomLeft'
+                | 'bottomCenter'
+                | 'bottomRight'
+              )
+            | null;
+          riveScrubEnabled?: boolean | null;
+          /**
+           * Name of the Number or Boolean state machine input to scrub.
+           */
+          riveScrubProperty?: string | null;
+          riveScrubInputType?: ('number' | 'boolean') | null;
+          riveScrubMin?: number | null;
+          riveScrubMax?: number | null;
+          /**
+           * e.g. "top bottom", "top 80%"
+           */
+          riveScrubStart?: string | null;
+          /**
+           * e.g. "bottom top", "bottom 20%"
+           */
+          riveScrubEnd?: string | null;
+          /**
+           * 0 = snap to scroll. >0 = lag in seconds.
+           */
+          riveScrubStrength?: number | null;
           /**
            * Override background position, size and repeat.
            */
@@ -390,6 +524,31 @@ export interface Page {
      */
     scrollJackScrub?: number | null;
     /**
+     * Scale / slide / fade this section in as it enters the viewport.
+     */
+    entranceAnim?: boolean | null;
+    entranceType?:
+      | (
+          | 'fade'
+          | 'fade-up'
+          | 'fade-down'
+          | 'fade-left'
+          | 'fade-right'
+          | 'slide-up'
+          | 'slide-down'
+          | 'slide-left'
+          | 'slide-right'
+          | 'stagger-words'
+          | 'scale'
+          | 'scale-up'
+          | 'scale-down'
+          | 'scale-left'
+          | 'scale-right'
+        )
+      | null;
+    entranceEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
+    entranceDuration?: number | null;
+    /**
      * Leave empty for block stacking (default).
      */
     flexDirection?: ('column' | 'row' | 'row-reverse' | 'column-reverse') | null;
@@ -401,7 +560,21 @@ export interface Page {
       | (
           | {
               title: string;
-              subtitle: string;
+              subtitle: {
+                root: {
+                  type: string;
+                  children: {
+                    type: any;
+                    version: number;
+                    [k: string]: unknown;
+                  }[];
+                  direction: ('ltr' | 'rtl') | null;
+                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                  indent: number;
+                  version: number;
+                };
+                [k: string]: unknown;
+              };
               image?: (string | null) | Media;
               cta?: {
                 label?: string | null;
@@ -421,6 +594,11 @@ export interface Page {
                     | 'slide-left'
                     | 'slide-right'
                     | 'stagger-words'
+                    | 'scale'
+                    | 'scale-up'
+                    | 'scale-down'
+                    | 'scale-left'
+                    | 'scale-right'
                   )
                 | null;
               titleAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
@@ -439,6 +617,11 @@ export interface Page {
                     | 'slide-left'
                     | 'slide-right'
                     | 'stagger-words'
+                    | 'scale'
+                    | 'scale-up'
+                    | 'scale-down'
+                    | 'scale-left'
+                    | 'scale-right'
                   )
                 | null;
               subtitleAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
@@ -457,6 +640,11 @@ export interface Page {
                     | 'slide-left'
                     | 'slide-right'
                     | 'stagger-words'
+                    | 'scale'
+                    | 'scale-up'
+                    | 'scale-down'
+                    | 'scale-left'
+                    | 'scale-right'
                   )
                 | null;
               ctaAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
@@ -475,6 +663,11 @@ export interface Page {
                     | 'slide-left'
                     | 'slide-right'
                     | 'stagger-words'
+                    | 'scale'
+                    | 'scale-up'
+                    | 'scale-down'
+                    | 'scale-left'
+                    | 'scale-right'
                   )
                 | null;
               imageAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
@@ -486,7 +679,21 @@ export interface Page {
             }
           | {
               title: string;
-              subtitle?: string | null;
+              subtitle?: {
+                root: {
+                  type: string;
+                  children: {
+                    type: any;
+                    version: number;
+                    [k: string]: unknown;
+                  }[];
+                  direction: ('ltr' | 'rtl') | null;
+                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                  indent: number;
+                  version: number;
+                };
+                [k: string]: unknown;
+              } | null;
               paddingX?: ('none' | 'sm' | 'md' | 'lg' | 'xl') | null;
               titleAnim?: boolean | null;
               titleAnimType?:
@@ -501,6 +708,11 @@ export interface Page {
                     | 'slide-left'
                     | 'slide-right'
                     | 'stagger-words'
+                    | 'scale'
+                    | 'scale-up'
+                    | 'scale-down'
+                    | 'scale-left'
+                    | 'scale-right'
                   )
                 | null;
               titleAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
@@ -519,6 +731,11 @@ export interface Page {
                     | 'slide-left'
                     | 'slide-right'
                     | 'stagger-words'
+                    | 'scale'
+                    | 'scale-up'
+                    | 'scale-down'
+                    | 'scale-left'
+                    | 'scale-right'
                   )
                 | null;
               subtitleAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
@@ -537,6 +754,11 @@ export interface Page {
                     | 'slide-left'
                     | 'slide-right'
                     | 'stagger-words'
+                    | 'scale'
+                    | 'scale-up'
+                    | 'scale-down'
+                    | 'scale-left'
+                    | 'scale-right'
                   )
                 | null;
               contentAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
@@ -567,6 +789,11 @@ export interface Page {
                     | 'slide-left'
                     | 'slide-right'
                     | 'stagger-words'
+                    | 'scale'
+                    | 'scale-up'
+                    | 'scale-down'
+                    | 'scale-left'
+                    | 'scale-right'
                   )
                 | null;
               titleAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
@@ -585,6 +812,11 @@ export interface Page {
                     | 'slide-left'
                     | 'slide-right'
                     | 'stagger-words'
+                    | 'scale'
+                    | 'scale-up'
+                    | 'scale-down'
+                    | 'scale-left'
+                    | 'scale-right'
                   )
                 | null;
               itemsAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
@@ -619,6 +851,11 @@ export interface Page {
                     | 'slide-left'
                     | 'slide-right'
                     | 'stagger-words'
+                    | 'scale'
+                    | 'scale-up'
+                    | 'scale-down'
+                    | 'scale-left'
+                    | 'scale-right'
                   )
                 | null;
               titleAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
@@ -637,6 +874,11 @@ export interface Page {
                     | 'slide-left'
                     | 'slide-right'
                     | 'stagger-words'
+                    | 'scale'
+                    | 'scale-up'
+                    | 'scale-down'
+                    | 'scale-left'
+                    | 'scale-right'
                   )
                 | null;
               itemsAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
@@ -652,7 +894,21 @@ export interface Page {
             }
           | {
               title: string;
-              subtitle?: string | null;
+              subtitle?: {
+                root: {
+                  type: string;
+                  children: {
+                    type: any;
+                    version: number;
+                    [k: string]: unknown;
+                  }[];
+                  direction: ('ltr' | 'rtl') | null;
+                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                  indent: number;
+                  version: number;
+                };
+                [k: string]: unknown;
+              } | null;
               paddingX?: ('none' | 'sm' | 'md' | 'lg' | 'xl') | null;
               titleAnim?: boolean | null;
               titleAnimType?:
@@ -667,6 +923,11 @@ export interface Page {
                     | 'slide-left'
                     | 'slide-right'
                     | 'stagger-words'
+                    | 'scale'
+                    | 'scale-up'
+                    | 'scale-down'
+                    | 'scale-left'
+                    | 'scale-right'
                   )
                 | null;
               titleAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
@@ -685,6 +946,11 @@ export interface Page {
                     | 'slide-left'
                     | 'slide-right'
                     | 'stagger-words'
+                    | 'scale'
+                    | 'scale-up'
+                    | 'scale-down'
+                    | 'scale-left'
+                    | 'scale-right'
                   )
                 | null;
               subtitleAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
@@ -703,6 +969,11 @@ export interface Page {
                     | 'slide-left'
                     | 'slide-right'
                     | 'stagger-words'
+                    | 'scale'
+                    | 'scale-up'
+                    | 'scale-down'
+                    | 'scale-left'
+                    | 'scale-right'
                   )
                 | null;
               contentAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
@@ -714,7 +985,21 @@ export interface Page {
             }
           | {
               title: string;
-              subtitle?: string | null;
+              subtitle?: {
+                root: {
+                  type: string;
+                  children: {
+                    type: any;
+                    version: number;
+                    [k: string]: unknown;
+                  }[];
+                  direction: ('ltr' | 'rtl') | null;
+                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                  indent: number;
+                  version: number;
+                };
+                [k: string]: unknown;
+              } | null;
               paddingX?: ('none' | 'sm' | 'md' | 'lg' | 'xl') | null;
               titleAnim?: boolean | null;
               titleAnimType?:
@@ -729,6 +1014,11 @@ export interface Page {
                     | 'slide-left'
                     | 'slide-right'
                     | 'stagger-words'
+                    | 'scale'
+                    | 'scale-up'
+                    | 'scale-down'
+                    | 'scale-left'
+                    | 'scale-right'
                   )
                 | null;
               titleAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
@@ -747,6 +1037,11 @@ export interface Page {
                     | 'slide-left'
                     | 'slide-right'
                     | 'stagger-words'
+                    | 'scale'
+                    | 'scale-up'
+                    | 'scale-down'
+                    | 'scale-left'
+                    | 'scale-right'
                   )
                 | null;
               subtitleAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
@@ -771,7 +1066,21 @@ export interface Page {
               headingSize?: ('sm' | 'md' | 'lg' | 'xl' | '2xl') | null;
               headingStyle?: ('display' | 'sans' | 'handwritten') | null;
               headingWeight?: ('light' | 'normal' | 'medium' | 'semibold' | 'bold' | 'extrabold' | 'black') | null;
-              body?: string | null;
+              body?: {
+                root: {
+                  type: string;
+                  children: {
+                    type: any;
+                    version: number;
+                    [k: string]: unknown;
+                  }[];
+                  direction: ('ltr' | 'rtl') | null;
+                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                  indent: number;
+                  version: number;
+                };
+                [k: string]: unknown;
+              } | null;
               bodySize?: ('sm' | 'md' | 'lg' | 'xl' | '2xl') | null;
               bodyWeight?: ('light' | 'normal' | 'medium' | 'semibold' | 'bold') | null;
               headingAccent?: string | null;
@@ -789,6 +1098,16 @@ export interface Page {
               image?: (string | null) | Media;
               imageAspect?: ('landscape' | 'video' | 'square' | 'portrait' | 'auto') | null;
               /**
+               * Optional fixed width in pixels. Leave blank for full width.
+               */
+              imageWidth?: number | null;
+              /**
+               * Optional fixed height in pixels.
+               */
+              imageHeight?: number | null;
+              imagePosition?: ('above-title' | 'above-text' | 'below-text') | null;
+              imageAlign?: ('left' | 'center' | 'right') | null;
+              /**
                * CSS color e.g. #ed1d22
                */
               colorEyebrow?: string | null;
@@ -796,6 +1115,10 @@ export interface Page {
                * CSS color
                */
               colorHeading?: string | null;
+              /**
+               * CSS color for the heading accent text
+               */
+              colorHeadingAccent?: string | null;
               /**
                * CSS color
                */
@@ -817,6 +1140,11 @@ export interface Page {
                     | 'slide-left'
                     | 'slide-right'
                     | 'stagger-words'
+                    | 'scale'
+                    | 'scale-up'
+                    | 'scale-down'
+                    | 'scale-left'
+                    | 'scale-right'
                   )
                 | null;
               eyebrowAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
@@ -835,6 +1163,11 @@ export interface Page {
                     | 'slide-left'
                     | 'slide-right'
                     | 'stagger-words'
+                    | 'scale'
+                    | 'scale-up'
+                    | 'scale-down'
+                    | 'scale-left'
+                    | 'scale-right'
                   )
                 | null;
               headingAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
@@ -853,6 +1186,11 @@ export interface Page {
                     | 'slide-left'
                     | 'slide-right'
                     | 'stagger-words'
+                    | 'scale'
+                    | 'scale-up'
+                    | 'scale-down'
+                    | 'scale-left'
+                    | 'scale-right'
                   )
                 | null;
               accentAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
@@ -871,6 +1209,11 @@ export interface Page {
                     | 'slide-left'
                     | 'slide-right'
                     | 'stagger-words'
+                    | 'scale'
+                    | 'scale-up'
+                    | 'scale-down'
+                    | 'scale-left'
+                    | 'scale-right'
                   )
                 | null;
               bodyAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
@@ -889,6 +1232,11 @@ export interface Page {
                     | 'slide-left'
                     | 'slide-right'
                     | 'stagger-words'
+                    | 'scale'
+                    | 'scale-up'
+                    | 'scale-down'
+                    | 'scale-left'
+                    | 'scale-right'
                   )
                 | null;
               ctaAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
@@ -907,6 +1255,11 @@ export interface Page {
                     | 'slide-left'
                     | 'slide-right'
                     | 'stagger-words'
+                    | 'scale'
+                    | 'scale-up'
+                    | 'scale-down'
+                    | 'scale-left'
+                    | 'scale-right'
                   )
                 | null;
               slotAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
@@ -951,6 +1304,11 @@ export interface Page {
                     | 'slide-left'
                     | 'slide-right'
                     | 'stagger-words'
+                    | 'scale'
+                    | 'scale-up'
+                    | 'scale-down'
+                    | 'scale-left'
+                    | 'scale-right'
                   )
                 | null;
               sectionAnimEasing?: ('ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear' | 'spring') | null;
@@ -982,23 +1340,7 @@ export interface Page {
                * Name of the state machine to activate (optional).
                */
               stateMachine?: string | null;
-              /**
-               * Name of a 0�100 Number input in the state machine to drive with scroll progress. Recommended for state-machine-based scroll scrub.
-               */
-              scrollInput?: string | null;
-              mode?: ('autoplay' | 'loop' | 'scroll-scrub') | null;
-              /**
-               * Duration of the animation in seconds. Required for direct timeline scrub (when no scroll input is set).
-               */
-              animDuration?: number | null;
-              /**
-               * GSAP ScrollTrigger start, e.g. "top 80%". Scrubbing begins here.
-               */
-              scrubStart?: string | null;
-              /**
-               * GSAP ScrollTrigger end, e.g. "bottom 20%". Scrubbing ends here.
-               */
-              scrubEnd?: string | null;
+              mode?: ('autoplay' | 'loop') | null;
               fit?: ('contain' | 'cover' | 'fill' | 'fitWidth' | 'fitHeight' | 'none') | null;
               alignment?:
                 | (
@@ -1014,9 +1356,287 @@ export interface Page {
                   )
                 | null;
               aspect?: ('16/9' | '4/3' | '1/1' | '9/16' | '3/4' | 'auto') | null;
+              /**
+               * Animate this element with GSAP as it scrolls into view.
+               */
+              stEnabled?: boolean | null;
+              /**
+               * e.g. "top bottom", "top 80%"
+               */
+              stStart?: string | null;
+              /**
+               * e.g. "top 20%", "center center"
+               */
+              stEnd?: string | null;
+              /**
+               * 0 = rigid lock to scroll, >0 = lag in seconds
+               */
+              stScrub?: number | null;
+              /**
+               * Leave blank to skip. e.g. 200 = slide in from right
+               */
+              stXFrom?: number | null;
+              stXTo?: number | null;
+              /**
+               * Leave blank to skip. e.g. 100 = slide in from below
+               */
+              stYFrom?: number | null;
+              stYTo?: number | null;
+              /**
+               * Leave blank to skip. e.g. 0.8 = scale up on entrance
+               */
+              stScaleFrom?: number | null;
+              stScaleTo?: number | null;
+              /**
+               * Leave blank to skip. e.g. 0 = fade in
+               */
+              stOpacityFrom?: number | null;
+              stOpacityTo?: number | null;
+              /**
+               * Set separate from/to values for screens below lg (1024px)
+               */
+              stMobileOverride?: boolean | null;
+              stMobileXFrom?: number | null;
+              stMobileXTo?: number | null;
+              stMobileYFrom?: number | null;
+              stMobileYTo?: number | null;
+              stMobileScaleFrom?: number | null;
+              stMobileScaleTo?: number | null;
+              stMobileOpacityFrom?: number | null;
+              stMobileOpacityTo?: number | null;
               id?: string | null;
               blockName?: string | null;
               blockType: 'rive';
+            }
+          | {
+              beliefs?:
+                | {
+                    number?: string | null;
+                    eyebrow?: string | null;
+                    title: string;
+                    body?: {
+                      root: {
+                        type: string;
+                        children: {
+                          type: any;
+                          version: number;
+                          [k: string]: unknown;
+                        }[];
+                        direction: ('ltr' | 'rtl') | null;
+                        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                        indent: number;
+                        version: number;
+                      };
+                      [k: string]: unknown;
+                    } | null;
+                    id?: string | null;
+                  }[]
+                | null;
+              titleSize?: ('sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl') | null;
+              bodySize?: ('sm' | 'md' | 'lg' | 'xl' | '2xl') | null;
+              /**
+               * How much scroll each belief captures. Default 120vh.
+               */
+              vhPerBelief?: number | null;
+              /**
+               * GSAP scrub lag. 0 = rigid, higher = softer.
+               */
+              scrub?: number | null;
+              /**
+               * Raw SVG markup rendered decoratively on the right side. Leave empty for no background graphic.
+               */
+              backgroundSvg?: string | null;
+              id?: string | null;
+              blockName?: string | null;
+              blockType: 'scrollBeliefs';
+            }
+          | {
+              beliefs?:
+                | {
+                    number?: string | null;
+                    title: string;
+                    body?: {
+                      root: {
+                        type: string;
+                        children: {
+                          type: any;
+                          version: number;
+                          [k: string]: unknown;
+                        }[];
+                        direction: ('ltr' | 'rtl') | null;
+                        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                        indent: number;
+                        version: number;
+                      };
+                      [k: string]: unknown;
+                    } | null;
+                    id?: string | null;
+                  }[]
+                | null;
+              id?: string | null;
+              blockName?: string | null;
+              blockType: 'beliefsCounter';
+            }
+          | {
+              pillars?:
+                | {
+                    label: string;
+                    descriptor?: string | null;
+                    body?: {
+                      root: {
+                        type: string;
+                        children: {
+                          type: any;
+                          version: number;
+                          [k: string]: unknown;
+                        }[];
+                        direction: ('ltr' | 'rtl') | null;
+                        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                        indent: number;
+                        version: number;
+                      };
+                      [k: string]: unknown;
+                    } | null;
+                    id?: string | null;
+                  }[]
+                | null;
+              id?: string | null;
+              blockName?: string | null;
+              blockType: 'aboutPillars';
+            }
+          | {
+              services?:
+                | {
+                    eyebrow?: string | null;
+                    headline: string;
+                    body?: {
+                      root: {
+                        type: string;
+                        children: {
+                          type: any;
+                          version: number;
+                          [k: string]: unknown;
+                        }[];
+                        direction: ('ltr' | 'rtl') | null;
+                        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                        indent: number;
+                        version: number;
+                      };
+                      [k: string]: unknown;
+                    } | null;
+                    bullets?:
+                      | {
+                          item: string;
+                          id?: string | null;
+                        }[]
+                      | null;
+                    id?: string | null;
+                  }[]
+                | null;
+              /**
+               * How much scroll each service captures. Default 150vh.
+               */
+              vhPerService?: number | null;
+              /**
+               * GSAP scrub lag. 0 = rigid, higher = softer.
+               */
+              scrub?: number | null;
+              paddingX?: ('none' | 'sm' | 'md' | 'lg' | 'xl') | null;
+              id?: string | null;
+              blockName?: string | null;
+              blockType: 'servicesShowcase';
+            }
+          | {
+              titleLine1: string;
+              titleLine2: string;
+              body?: {
+                root: {
+                  type: string;
+                  children: {
+                    type: any;
+                    version: number;
+                    [k: string]: unknown;
+                  }[];
+                  direction: ('ltr' | 'rtl') | null;
+                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                  indent: number;
+                  version: number;
+                };
+                [k: string]: unknown;
+              } | null;
+              paddingX?: ('none' | 'sm' | 'md' | 'lg' | 'xl') | null;
+              id?: string | null;
+              blockName?: string | null;
+              blockType: 'consolidationBlock';
+            }
+          | {
+              title?: string | null;
+              subtitle?: {
+                root: {
+                  type: string;
+                  children: {
+                    type: any;
+                    version: number;
+                    [k: string]: unknown;
+                  }[];
+                  direction: ('ltr' | 'rtl') | null;
+                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                  indent: number;
+                  version: number;
+                };
+                [k: string]: unknown;
+              } | null;
+              /**
+               * Only show testimonials marked as featured.
+               */
+              featuredOnly?: boolean | null;
+              /**
+               * Maximum number of testimonials to show. Leave empty for all.
+               */
+              limit?: number | null;
+              paddingX?: ('none' | 'sm' | 'md' | 'lg' | 'xl') | null;
+              id?: string | null;
+              blockName?: string | null;
+              blockType: 'testimonialsBlock';
+            }
+          | {
+              logos?:
+                | {
+                    /**
+                     * Accepts SVG and PNG.
+                     */
+                    image: string | Media;
+                    alt?: string | null;
+                    href?: string | null;
+                    label?: string | null;
+                    id?: string | null;
+                  }[]
+                | null;
+              rows?: ('1' | '2' | '3') | null;
+              direction?: ('left' | 'right' | 'up' | 'down') | null;
+              /**
+               * Even rows scroll in the opposite direction.
+               */
+              alternateRows?: boolean | null;
+              /**
+               * Seconds to complete one full loop. Default 40.
+               */
+              speed?: number | null;
+              gap?: ('sm' | 'md' | 'lg' | 'xl') | null;
+              rowGap?: ('sm' | 'md' | 'lg') | null;
+              logoHeight?: number | null;
+              pauseOnHover?: boolean | null;
+              /**
+               * Gradient fade mask on the leading/trailing edges.
+               */
+              fadeEdges?: boolean | null;
+              grayscale?: boolean | null;
+              paddingTop?: ('none' | 'sm' | 'md' | 'lg' | 'xl') | null;
+              paddingBottom?: ('none' | 'sm' | 'md' | 'lg' | 'xl') | null;
+              paddingX?: ('none' | 'sm' | 'md' | 'lg' | 'xl') | null;
+              id?: string | null;
+              blockName?: string | null;
+              blockType: 'logoCarousel';
             }
         )[]
       | null;
@@ -1102,6 +1722,34 @@ export interface ContactSubmission {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "testimonials".
+ */
+export interface Testimonial {
+  id: string;
+  /**
+   * The testimonial text (no quotation marks needed).
+   */
+  quote: string;
+  author: string;
+  /**
+   * Job title or role, e.g. "Director of Post Production".
+   */
+  role?: string | null;
+  company?: string | null;
+  /**
+   * Optional headshot.
+   */
+  avatar?: (string | null) | Media;
+  featured?: boolean | null;
+  /**
+   * Lower numbers appear first.
+   */
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -1147,6 +1795,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'contact-submissions';
         value: string | ContactSubmission;
+      } | null)
+    | ({
+        relationTo: 'testimonials';
+        value: string | Testimonial;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1279,6 +1931,8 @@ export interface PagesSelect<T extends boolean = true> {
     | T
     | {
         pageTheme?: T;
+        headerTheme?: T;
+        footerTheme?: T;
         noise?: T;
         backgrounds?:
           | T
@@ -1287,12 +1941,31 @@ export interface PagesSelect<T extends boolean = true> {
               color?: T;
               gradient?: T;
               image?: T;
+              videoSrc?: T;
+              videoFile?: T;
+              videoAutoplay?: T;
+              videoLoop?: T;
+              videoMuted?: T;
               svgCode?: T;
               svgTop?: T;
               svgRight?: T;
               svgBottom?: T;
               svgLeft?: T;
               svgTransform?: T;
+              riveFile?: T;
+              riveUrl?: T;
+              riveArtboard?: T;
+              riveStateMachine?: T;
+              riveFit?: T;
+              riveAlignment?: T;
+              riveScrubEnabled?: T;
+              riveScrubProperty?: T;
+              riveScrubInputType?: T;
+              riveScrubMin?: T;
+              riveScrubMax?: T;
+              riveScrubStart?: T;
+              riveScrubEnd?: T;
+              riveScrubStrength?: T;
               enableTransform?: T;
               bgSize?: T;
               bgPosition?: T;
@@ -1316,6 +1989,8 @@ export interface PagesSelect<T extends boolean = true> {
               paddingBottom?: T;
               paddingX?: T;
               allowOverflow?: T;
+              minHeightMobile?: T;
+              minHeightDesktop?: T;
               useNoise?: T;
               backgrounds?:
                 | T
@@ -1324,12 +1999,31 @@ export interface PagesSelect<T extends boolean = true> {
                     color?: T;
                     gradient?: T;
                     image?: T;
+                    videoSrc?: T;
+                    videoFile?: T;
+                    videoAutoplay?: T;
+                    videoLoop?: T;
+                    videoMuted?: T;
                     svgCode?: T;
                     svgTop?: T;
                     svgRight?: T;
                     svgBottom?: T;
                     svgLeft?: T;
                     svgTransform?: T;
+                    riveFile?: T;
+                    riveUrl?: T;
+                    riveArtboard?: T;
+                    riveStateMachine?: T;
+                    riveFit?: T;
+                    riveAlignment?: T;
+                    riveScrubEnabled?: T;
+                    riveScrubProperty?: T;
+                    riveScrubInputType?: T;
+                    riveScrubMin?: T;
+                    riveScrubMax?: T;
+                    riveScrubStart?: T;
+                    riveScrubEnd?: T;
+                    riveScrubStrength?: T;
                     enableTransform?: T;
                     bgSize?: T;
                     bgPosition?: T;
@@ -1340,6 +2034,10 @@ export interface PagesSelect<T extends boolean = true> {
                   };
               scrollJackHeight?: T;
               scrollJackScrub?: T;
+              entranceAnim?: T;
+              entranceType?: T;
+              entranceEasing?: T;
+              entranceDuration?: T;
               flexDirection?: T;
               flexJustify?: T;
               flexAlign?: T;
@@ -1524,8 +2222,13 @@ export interface PagesSelect<T extends boolean = true> {
                           ctaStyle?: T;
                           image?: T;
                           imageAspect?: T;
+                          imageWidth?: T;
+                          imageHeight?: T;
+                          imagePosition?: T;
+                          imageAlign?: T;
                           colorEyebrow?: T;
                           colorHeading?: T;
+                          colorHeadingAccent?: T;
                           colorBody?: T;
                           colorCta?: T;
                           eyebrowAnim?: T;
@@ -1590,14 +2293,151 @@ export interface PagesSelect<T extends boolean = true> {
                           artboard?: T;
                           animation?: T;
                           stateMachine?: T;
-                          scrollInput?: T;
                           mode?: T;
-                          animDuration?: T;
-                          scrubStart?: T;
-                          scrubEnd?: T;
                           fit?: T;
                           alignment?: T;
                           aspect?: T;
+                          stEnabled?: T;
+                          stStart?: T;
+                          stEnd?: T;
+                          stScrub?: T;
+                          stXFrom?: T;
+                          stXTo?: T;
+                          stYFrom?: T;
+                          stYTo?: T;
+                          stScaleFrom?: T;
+                          stScaleTo?: T;
+                          stOpacityFrom?: T;
+                          stOpacityTo?: T;
+                          stMobileOverride?: T;
+                          stMobileXFrom?: T;
+                          stMobileXTo?: T;
+                          stMobileYFrom?: T;
+                          stMobileYTo?: T;
+                          stMobileScaleFrom?: T;
+                          stMobileScaleTo?: T;
+                          stMobileOpacityFrom?: T;
+                          stMobileOpacityTo?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                    scrollBeliefs?:
+                      | T
+                      | {
+                          beliefs?:
+                            | T
+                            | {
+                                number?: T;
+                                eyebrow?: T;
+                                title?: T;
+                                body?: T;
+                                id?: T;
+                              };
+                          titleSize?: T;
+                          bodySize?: T;
+                          vhPerBelief?: T;
+                          scrub?: T;
+                          backgroundSvg?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                    beliefsCounter?:
+                      | T
+                      | {
+                          beliefs?:
+                            | T
+                            | {
+                                number?: T;
+                                title?: T;
+                                body?: T;
+                                id?: T;
+                              };
+                          id?: T;
+                          blockName?: T;
+                        };
+                    aboutPillars?:
+                      | T
+                      | {
+                          pillars?:
+                            | T
+                            | {
+                                label?: T;
+                                descriptor?: T;
+                                body?: T;
+                                id?: T;
+                              };
+                          id?: T;
+                          blockName?: T;
+                        };
+                    servicesShowcase?:
+                      | T
+                      | {
+                          services?:
+                            | T
+                            | {
+                                eyebrow?: T;
+                                headline?: T;
+                                body?: T;
+                                bullets?:
+                                  | T
+                                  | {
+                                      item?: T;
+                                      id?: T;
+                                    };
+                                id?: T;
+                              };
+                          vhPerService?: T;
+                          scrub?: T;
+                          paddingX?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                    consolidationBlock?:
+                      | T
+                      | {
+                          titleLine1?: T;
+                          titleLine2?: T;
+                          body?: T;
+                          paddingX?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                    testimonialsBlock?:
+                      | T
+                      | {
+                          title?: T;
+                          subtitle?: T;
+                          featuredOnly?: T;
+                          limit?: T;
+                          paddingX?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                    logoCarousel?:
+                      | T
+                      | {
+                          logos?:
+                            | T
+                            | {
+                                image?: T;
+                                alt?: T;
+                                href?: T;
+                                label?: T;
+                                id?: T;
+                              };
+                          rows?: T;
+                          direction?: T;
+                          alternateRows?: T;
+                          speed?: T;
+                          gap?: T;
+                          rowGap?: T;
+                          logoHeight?: T;
+                          pauseOnHover?: T;
+                          fadeEdges?: T;
+                          grayscale?: T;
+                          paddingTop?: T;
+                          paddingBottom?: T;
+                          paddingX?: T;
                           id?: T;
                           blockName?: T;
                         };
@@ -1656,6 +2496,21 @@ export interface ContactSubmissionsSelect<T extends boolean = true> {
   email?: T;
   company?: T;
   message?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "testimonials_select".
+ */
+export interface TestimonialsSelect<T extends boolean = true> {
+  quote?: T;
+  author?: T;
+  role?: T;
+  company?: T;
+  avatar?: T;
+  featured?: T;
+  order?: T;
   updatedAt?: T;
   createdAt?: T;
 }

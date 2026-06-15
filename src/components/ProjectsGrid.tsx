@@ -4,6 +4,7 @@ import type { CMSProject } from '@/lib/cms'
 import { mediaURL } from '@/lib/cms'
 import { ScrollAnimate } from '@/components/ScrollAnimate'
 import type { AnimType, AnimEasing } from '@/components/ScrollAnimate'
+import { pxClass } from '@/lib/spacing'
 
 type Props = {
   projects: CMSProject[]
@@ -21,14 +22,6 @@ type Props = {
   itemsAnimDelay?: number
   itemsAnimStagger?: number
   paddingX?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
-}
-
-const pxClass = {
-  none: 'px-0',
-  sm: 'px-4 md:px-6 lg:px-8',
-  md: 'px-6 md:px-10 lg:px-16',
-  lg: 'px-8 md:px-16 lg:px-24',
-  xl: 'px-10 md:px-20 lg:px-32',
 }
 
 export function ProjectsGrid({

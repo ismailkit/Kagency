@@ -13,21 +13,25 @@ const footerLinks = [
 ]
 
 export function Footer() {
-  const { pageTheme } = usePageSettings()
-  const isDark = pageTheme === 'dark'
+  const { pageTheme, footerTheme } = usePageSettings()
+  const resolvedTheme = footerTheme && footerTheme !== 'inherit' ? footerTheme : pageTheme
+  const isDark = resolvedTheme === 'dark'
 
   return (
-    <footer className={`site-shell${isDark ? ' text-white' : ''} mb-4`}>
+    <footer
+      className={`site-shell ${isDark ? 'bg-kblack-500 text-white' : 'bg-white text-kblack-500'} mb-4`}
+    >
       <div
-        className={`section-container section-container--bottom${isDark ? ' border-white' : ''}`}
+        className="section-container section-container--bottom"
+        style={{ '--section-border': isDark ? 'rgba(255,255,255,1)' : 'rgba(0,0,0,1)' } as never}
       >
         <div className="flex items-center justify-between gap-6 px-6 py-8 md:px-10">
           {/* K logo — homepage link */}
           <div className="block">
             <Link href="/" aria-label="Home" className="absolute -bottom-5">
               <span
-                className={`flex items-center justify-center rounded-full transition ${
-                  isDark ? 'bg-transparent text-white' : 'bg-white text-kred-500'
+                className={`flex items-center justify-center transition ${
+                  isDark ? 'bg-[#242424] text-white' : 'bg-white text-kred-500'
                 }`}
               >
                 <KLogo className="h-10 w-10" />

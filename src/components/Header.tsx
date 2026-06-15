@@ -19,8 +19,9 @@ const links = [
 export function Header() {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
-  const { pageTheme } = usePageSettings()
-  const isDark = pageTheme === 'dark'
+  const { pageTheme, headerTheme } = usePageSettings()
+  const resolvedTheme = headerTheme && headerTheme !== 'inherit' ? headerTheme : pageTheme
+  const isDark = resolvedTheme === 'dark'
   const navRef = useRef<HTMLElement>(null)
 
   // Animate mobile nav open/close via GSAP clipPath
@@ -34,7 +35,9 @@ export function Header() {
   }, [isOpen])
 
   return (
-    <header className="site-shell relative z-50 pt-8 md:pt-10">
+    <header
+      className={`site-shell relative z-50 pt-8 md:pt-10${isDark ? ' bg-kblack-500 text-white' : ''}`}
+    >
       <div className={`ms-6 flex items-center justify-between gap-4 py-5`}>
         <Link
           href="/"
@@ -46,26 +49,29 @@ export function Header() {
           />
         </Link>
 
-        {/* Hamburger — three CSS lines, no SVG morphing needed */}
+        {/* Hamburger / X toggle */}
         <button
-          className="z-60 relative inline-flex h-10 w-10 flex-col items-center justify-center gap-1.25 md:hidden"
+          className={`z-60 relative h-10 w-10 md:hidden${isDark || isOpen ? ' text-white' : ''}`}
           onClick={() => setIsOpen((prev) => !prev)}
           aria-label="Toggle menu"
           aria-expanded={isOpen}
         >
+          {/* Top bar → becomes X arm 1 */}
           <span
-            className={`block h-[2.5px] w-5.5 bg-current origin-center transition-transform duration-300${
-              isOpen ? ' translate-y-[7.5px] rotate-45' : ''
+            className={`absolute left-2 h-0.5 w-6 bg-current origin-center transition-all duration-300 ${
+              isOpen ? 'top-4.75 rotate-45' : 'top-3.25'
             }`}
           />
+          {/* Middle bar → fades out */}
           <span
-            className={`block h-[2.5px] w-5.5 bg-current transition-opacity duration-200${
-              isOpen ? ' opacity-0' : ''
+            className={`absolute left-2 top-4.75 h-0.5 w-6 bg-current transition-opacity duration-200 ${
+              isOpen ? 'opacity-0' : 'opacity-100'
             }`}
           />
+          {/* Bottom bar → becomes X arm 2 */}
           <span
-            className={`block h-[2.5px] w-5.5 bg-current origin-center transition-transform duration-300${
-              isOpen ? ' -translate-y-[7.5px] -rotate-45' : ''
+            className={`absolute left-2 h-0.5 w-6 bg-current origin-center transition-all duration-300 ${
+              isOpen ? 'top-4.75 -rotate-45' : 'top-6.25'
             }`}
           />
         </button>

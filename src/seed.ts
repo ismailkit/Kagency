@@ -1,9 +1,11 @@
-/**
- * Seed script — fills Payload CMS with dummy data for local development.
+﻿/**
+ * Seed script: fills Payload CMS with dummy data for local development.
  * Run with:  npm run seed
  *
- * It is idempotent: running it twice is safe. Existing docs are deleted by slug/title
- * before re-insertion so you always end up with a clean, consistent dataset.
+ * Idempotent: safe to run twice. Existing docs in target collections are
+ * cleared before re-insertion so you always end up with a clean dataset.
+ *
+ * Content-only. No styling fields. CMS defaults govern visuals.
  */
 
 import 'dotenv/config'
@@ -13,7 +15,7 @@ import config from './payload.config.js'
 
 const payload = await getPayload({ config })
 
-// ─── helpers ────────────────────────────────────────────────────────────────
+// ── helpers ────────────────────────────────────────────────────────────────
 
 async function clearCollection(slug: 'services' | 'projects' | 'pages' | 'media') {
   const existing = await payload.find({ collection: slug, limit: 200, pagination: false })
@@ -30,7 +32,7 @@ async function seedMedia(url: string, filename: string, alt: string): Promise<st
   try {
     const res = await fetch(url)
     if (!res.ok) {
-      console.warn(`  ⚠ media fetch failed (${res.status}): ${filename}`)
+      console.warn(`  ! media fetch failed (${res.status}): ${filename}`)
       return null
     }
     const arrayBuffer = await res.arrayBuffer()
@@ -41,15 +43,46 @@ async function seedMedia(url: string, filename: string, alt: string): Promise<st
       data: { alt },
       file: { data, mimetype, name: filename, size: data.length },
     })
-    console.log(`  ✓ media: ${filename}`)
+    console.log(`  + media: ${filename}`)
     return String(doc.id)
   } catch (e) {
-    console.warn(`  ⚠ media upload error: ${filename}`, e)
+    console.warn(`  ! media upload error: ${filename}`, e)
     return null
   }
 }
 
-// ─── Services ───────────────────────────────────────────────────────────────
+/** Minimal valid Lexical document wrapping plain-text paragraphs. */
+function txt(text: string) {
+  const lines = text.split(/\r?\n/)
+  const paragraphs = lines.map((line) => ({
+    children: line.length
+      ? [{ detail: 0, format: 0, mode: 'normal', style: '', text: line, type: 'text', version: 1 }]
+      : [],
+    direction: 'ltr',
+    format: '',
+    indent: 0,
+    type: 'paragraph',
+    version: 1,
+  }))
+  return {
+    root: {
+      children: paragraphs,
+      direction: 'ltr',
+      format: '',
+      indent: 0,
+      type: 'root',
+      version: 1,
+    },
+  }
+}
+
+const fc = (fields: Record<string, unknown>) => ({ blockType: 'flexContent', ...fields })
+const sec = (block: unknown) => ({
+  blockType: 'section',
+  block: Array.isArray(block) ? block : [block],
+})
+
+// ── Services ───────────────────────────────────────────────────────────────
 
 await clearCollection('services')
 
@@ -66,7 +99,7 @@ const services = [
     title: 'Art Direction',
     category: 'Design',
     shortDescription:
-      'From concept to final pixel — photography, layout, and motion all guided by a single creative vision.',
+      'From concept to final pixel. Photography, layout, and motion all guided by a single creative vision.',
     featured: true,
     order: 2,
   },
@@ -82,7 +115,7 @@ const services = [
     title: 'Web Development',
     category: 'Development',
     shortDescription:
-      'Performant, accessible, and maintainable web apps built on modern stacks — Next.js, React, TypeScript.',
+      'Performant, accessible, and maintainable web apps built on modern stacks: Next.js, React, TypeScript.',
     featured: true,
     order: 4,
   },
@@ -90,7 +123,7 @@ const services = [
     title: 'Headless CMS',
     category: 'Development',
     shortDescription:
-      'Content infrastructure your team can actually use — Payload, Sanity, Contentful, or custom.',
+      'Content infrastructure your team can actually use. Payload, Sanity, Contentful, or custom.',
     featured: false,
     order: 5,
   },
@@ -114,7 +147,7 @@ const services = [
     title: 'Campaign Design',
     category: 'Brand',
     shortDescription:
-      'Cross-channel campaign assets — social, OOH, digital display — built from a single visual idea.',
+      'Cross-channel campaign assets across social, OOH, and digital display, built from a single visual idea.',
     featured: false,
     order: 8,
   },
@@ -124,22 +157,20 @@ const createdServices: Array<{ id: string }> = []
 for (const s of services) {
   const doc = await payload.create({ collection: 'services', data: s })
   createdServices.push({ id: String(doc.id) })
-  console.log(`  ✓ service: ${s.title}`)
+  console.log(`  + service: ${s.title}`)
 }
 
-// ─── Projects ───────────────────────────────────────────────────────────────
+// ── Projects + media ──────────────────────────────────────────────────────
 
 await clearCollection('media')
 await clearCollection('projects')
 
-// Curated Unsplash photos — format: photo-{id}?w=1200&q=80&auto=format&fit=crop
 const U = (id: string) => `https://images.unsplash.com/photo-${id}?w=1200&q=80&auto=format&fit=crop`
 
 console.log('\n  Uploading cover images...')
 const covers: Record<string, string | null> = {}
 
 const coverDefs: Array<{ key: string; url: string; filename: string; alt: string }> = [
-  // Design
   {
     key: 'lucent-editorial',
     url: U('1507003211169-0a1dd7228f2d'),
@@ -158,7 +189,6 @@ const coverDefs: Array<{ key: string; url: string; filename: string; alt: string
     filename: 'sable-product-ui.jpg',
     alt: 'Sable Finance product UI',
   },
-  // Development
   {
     key: 'christys-restaurant-group',
     url: U('1414235077428-338989a2e8c0'),
@@ -177,7 +207,6 @@ const coverDefs: Array<{ key: string; url: string; filename: string; alt: string
     filename: 'nocturne-events.jpg',
     alt: 'Nocturne live event crowd',
   },
-  // Brand
   {
     key: 'veld-spirits',
     url: U('1569529465841-dfecdab7503b'),
@@ -196,7 +225,6 @@ const coverDefs: Array<{ key: string; url: string; filename: string; alt: string
     filename: 'ova-skincare.jpg',
     alt: 'Ova skincare product line',
   },
-  // Strategy
   {
     key: 'pivot-growth-roadmap',
     url: U('1454165804606-c3d57bc86b40'),
@@ -216,14 +244,13 @@ for (const def of coverDefs) {
 }
 
 const projects = [
-  // Design
   {
     title: 'Lucent Editorial',
     slug: 'lucent-editorial',
     client: 'Lucent Magazine',
     category: 'design',
     summary:
-      'Full art-direction overhaul for a quarterly print and digital magazine — grid systems, typography hierarchy, and a new image treatment language.',
+      'Full art-direction overhaul for a quarterly print and digital magazine. Grid systems, typography hierarchy, and a new image treatment language.',
     featured: true,
   },
   {
@@ -232,7 +259,7 @@ const projects = [
     client: 'Forma Architecture',
     category: 'design',
     summary:
-      'Editorial portfolio site for a boutique architecture studio — clean white space, oversized imagery, and tactile micro-interactions.',
+      'Editorial portfolio site for a boutique architecture studio. Clean white space, oversized imagery, and tactile micro-interactions.',
     featured: false,
   },
   {
@@ -241,18 +268,16 @@ const projects = [
     client: 'Sable Finance',
     category: 'design',
     summary:
-      'End-to-end product design for a challenger bank — onboarding, dashboard, and cards management across iOS and web.',
+      'End-to-end product design for a challenger bank. Onboarding, dashboard, and cards management across iOS and web.',
     featured: true,
   },
-
-  // Development
   {
     title: "Christy's Restaurant Group",
     slug: 'christys-restaurant-group',
     client: "Christy's",
     category: 'development',
     summary:
-      'Flagship site for a multi-location fine-dining group — Next.js 15, Payload CMS, animated menu explorer, and online booking integration.',
+      'Flagship site for a multi-location fine-dining group. Next.js 15, Payload CMS, animated menu explorer, and online booking integration.',
     featured: true,
   },
   {
@@ -270,18 +295,16 @@ const projects = [
     client: 'Nocturne',
     category: 'development',
     summary:
-      'Full-stack event discovery and ticketing app — React Native mobile, Next.js web portal, and a Payload-backed promoter CMS.',
+      'Full-stack event discovery and ticketing app. React Native mobile, Next.js web portal, and a Payload-backed promoter CMS.',
     featured: true,
   },
-
-  // Brand
   {
     title: 'Veld Spirits',
     slug: 'veld-spirits',
     client: 'Veld',
     category: 'brand',
     summary:
-      'Brand identity for a craft distillery — naming, wordmark, bottle label system, and brand book covering voice, tone, and photography guidelines.',
+      'Brand identity for a craft distillery. Naming, wordmark, bottle label system, and brand book covering voice, tone, and photography guidelines.',
     featured: true,
   },
   {
@@ -290,7 +313,7 @@ const projects = [
     client: 'Meridian Spaces',
     category: 'brand',
     summary:
-      'Full rebrand for a premium co-working chain across 6 cities — logo, colour palette, wayfinding, and digital touchpoints.',
+      'Full rebrand for a premium co-working chain across 6 cities. Logo, colour palette, wayfinding, and digital touchpoints.',
     featured: true,
   },
   {
@@ -299,18 +322,16 @@ const projects = [
     client: 'Ova',
     category: 'brand',
     summary:
-      'Launch brand for a science-led skincare line — wordmark, packaging system, e-commerce art direction, and social identity.',
+      'Launch brand for a science-led skincare line. Wordmark, packaging system, e-commerce art direction, and social identity.',
     featured: false,
   },
-
-  // Strategy
   {
     title: 'Pivot Growth Roadmap',
     slug: 'pivot-growth-roadmap',
     client: 'Pivot SaaS',
     category: 'strategy',
     summary:
-      'Six-month embedded growth engagement — funnel audit, channel prioritisation, A/B testing framework, and a 30/60/90 execution plan.',
+      'Six-month embedded growth engagement. Funnel audit, channel prioritisation, A/B testing framework, and a 30/60/90 execution plan.',
     featured: true,
   },
   {
@@ -319,7 +340,7 @@ const projects = [
     client: 'Halo Health',
     category: 'strategy',
     summary:
-      'Market entry strategy for a digital health startup expanding into three new European markets — positioning, pricing, and GTM playbook.',
+      'Market entry strategy for a digital health startup expanding into three new European markets. Positioning, pricing, and GTM playbook.',
     featured: false,
   },
 ]
@@ -335,208 +356,139 @@ for (const p of projects) {
       publishedAt: new Date().toISOString(),
     },
   })
-  console.log(`  ✓ project: ${p.title}`)
+  console.log(`  + project: ${p.title}`)
 }
 
-// ─── Pages ──────────────────────────────────────────────────────────────────
+// ── Pages: Home only ──────────────────────────────────────────────────────
+// Other pages live in dedicated seed files (seed-about.ts, seed-services.ts, etc.).
 
 await clearCollection('pages')
-
-// Helper to wrap a content block in a section block
-function section(
-  block: Record<string, unknown>,
-  opts: {
-    containerStyle?: string
-    useNoise?: 'solid' | 'gradient' | 'none'
-    bgColor?: string
-  } = {},
-) {
-  return {
-    blockType: 'section',
-    containerStyle: opts.containerStyle ?? 'normal',
-    useNoise: opts.useNoise ?? 'none',
-    backgrounds: opts.bgColor
-      ? [{ type: 'solid', color: opts.bgColor, opacity: 1, blendMode: 'normal' }]
-      : [],
-    block: [block],
-  }
-}
-
-// ── Home ──────────────────────────────────────────────────────────────────
 
 await payload.create({
   collection: 'pages',
   data: {
     title: 'Home',
     slug: 'home',
-    excerpt: 'We make digital things people actually want to use.',
+    excerpt: 'You have an idea. We have the passion, the flair, and the craft to make it real.',
     layout: [
-      section(
-        {
-          blockType: 'landingHero',
-          title: 'We make digital things people actually want to use.',
-          subtitle:
-            'Kagency is a full-service creative studio — brand, design, and engineering under one roof.',
-          cta: { label: 'See Our Work', href: '/the-agency' },
-        },
-        { bgColor: '#242424', useNoise: 'solid' },
+      // 1. Hero
+      sec({
+        blockType: 'landingHero',
+        title:
+          'HI, WE ARE KAGENCY.\nyou have an idea?\nwe have the passion, the flair,\nand the craft to make it REAL.',
+        subtitle: txt(
+          "We don't just build. We partner. From first sketch to live product, we are with you. And we never give up on you.",
+        ),
+        cta: { label: 'See our work \u2192', href: '/the-agency' },
+      }),
+
+      // 2. Social proof numbers
+      sec({
+        blockType: 'beliefsCounter',
+        beliefs: [
+          {
+            number: '+20',
+            title: 'Brands shaped',
+            body: txt(
+              'Identities, wordmarks, and visual systems we built from a blank page. Each one designed to be remembered, not blended in.',
+            ),
+          },
+          {
+            number: '+50',
+            title: 'Partners served',
+            body: txt(
+              'Companies and startups who stopped working with vendors and started working with us. Most have been with us for years.',
+            ),
+          },
+          {
+            number: '+10',
+            title: 'Markets entered',
+            body: txt(
+              'Countries where we have launched products, optimized search, or stood up entire digital presences. Local knowledge, global craft.',
+            ),
+          },
+        ],
+      }),
+
+      // 3. Strip CTA
+      sec(
+        fc({
+          eyebrow: 'and counting',
+          heading: 'the next one\ncould be YOURS.',
+          body: txt(
+            'When we partner up, you do not just buy a project. You join a small list of clients we are actively building with, every week.',
+          ),
+          ctaLabel: "Let's chat! \u2192",
+          ctaHref: '/contact',
+        }),
       ),
-      section(
-        {
-          blockType: 'landingWorks',
-          title: 'Our Work',
-          subtitle: "Brands built to last. Products built to grow. Here's what we've been making.",
-          columns: [
-            {
-              label: 'Design',
-              category: 'design',
-              cardTitle: 'Visual Work',
-              cardSubtitle: 'identity & UI',
-            },
-            {
-              label: 'Development',
-              category: 'development',
-              cardTitle: 'Built Things',
-              cardSubtitle: 'web & apps',
-            },
-            {
-              label: 'Brand',
-              category: 'brand',
-              cardTitle: 'Brand Worlds',
-              cardSubtitle: 'strategy & voice',
-            },
-          ],
-        },
-        { bgColor: '#f4f4f0' },
+
+      // 4. INVESTED. AND EFFICIENT.
+      sec(
+        fc({
+          eyebrow: 'why we are different',
+          heading: 'INVESTED.\nAND EFFICIENT.',
+          headingAccent: 'we know the stakes.',
+          body: txt(
+            'We own digital products ourselves. We know what it costs when something breaks at 2am, when SEO slips, when a launch falls flat.\nSo when we work on yours, we treat it like ours. Every decision, every line of code, every strategy call.\nOne team. Everything your digital presence needs. One line to call.',
+          ),
+          ctaLabel: 'More about what we do \u2192',
+          ctaHref: '/services',
+        }),
       ),
-      section(
-        {
-          blockType: 'servicesGrid',
-          title: 'What We Do',
-          featuredOnly: true,
-        },
-        { bgColor: '#ffffff' },
+
+      // 5. Works showcase
+      sec({
+        blockType: 'landingWorks',
+        title: 'WORK WE SHIPPED.',
+        subtitle:
+          'A look at the brands, products, and partnerships we have shaped. Click any column to dig deeper.',
+        columns: [
+          {
+            label: 'Design',
+            category: 'design',
+            cardTitle: 'Visual systems',
+            cardSubtitle: 'identity, UI, art direction',
+          },
+          {
+            label: 'Development',
+            category: 'development',
+            cardTitle: 'Products in market',
+            cardSubtitle: 'web apps, mobile, e-commerce',
+          },
+          {
+            label: 'Brand',
+            category: 'brand',
+            cardTitle: 'Brand worlds',
+            cardSubtitle: 'strategy, voice, packaging',
+          },
+        ],
+      }),
+
+      // 6. Testimonials
+      sec({
+        blockType: 'testimonialsBlock',
+        title: "don't take OUR word for it.",
+        subtitle: 'Real partners. Real reviews. No staged copywriting.',
+      }),
+
+      // 7. Footer CTA
+      sec(
+        fc({
+          heading: "LIKE WHAT YOU SEE?\ngood. let's make something\nyou'll be PROUD OF.",
+          body: txt('End-to-end digital solutions. Bold by default. Built to last.'),
+          ctaLabel: 'Send us a message \u2192',
+          ctaHref: '/contact',
+        }),
       ),
     ],
   },
 })
-console.log('  ✓ page: home')
+console.log('  + page: home')
 
-// ── The Agency ────────────────────────────────────────────────────────────
-
-await payload.create({
-  collection: 'pages',
-  data: {
-    title: 'The Agency',
-    slug: 'the-agency',
-    excerpt: 'A look at our process, our work, and our people.',
-    layout: [
-      section(
-        {
-          blockType: 'pageHero',
-          title: 'The Agency',
-          subtitle:
-            'We are a tight team of designers, engineers, and strategists who ship work we are proud of.',
-        },
-        { bgColor: '#242424' },
-      ),
-      section(
-        {
-          blockType: 'projectsGrid',
-          title: 'Selected Work',
-          featuredOnly: true,
-          limit: 6,
-        },
-        { bgColor: '#f4f4f0' },
-      ),
-    ],
-  },
-})
-console.log('  ✓ page: the-agency')
-
-// ── Services ──────────────────────────────────────────────────────────────
-
-await payload.create({
-  collection: 'pages',
-  data: {
-    title: 'Services',
-    slug: 'services',
-    excerpt: 'Everything you need from a single studio.',
-    layout: [
-      section(
-        {
-          blockType: 'pageHero',
-          title: 'Services',
-          subtitle: 'From idea to launch — strategy, design, and engineering in one place.',
-        },
-        { bgColor: '#242424' },
-      ),
-      section(
-        {
-          blockType: 'servicesGrid',
-          title: 'What We Offer',
-          featuredOnly: false,
-        },
-        { bgColor: '#f4f4f0' },
-      ),
-    ],
-  },
-})
-console.log('  ✓ page: services')
-
-// ── About ─────────────────────────────────────────────────────────────────
-
-await payload.create({
-  collection: 'pages',
-  data: {
-    title: 'About',
-    slug: 'about',
-    excerpt: 'Why we built Kagency and how we work.',
-    layout: [
-      section(
-        {
-          blockType: 'pageHero',
-          title: 'About',
-          subtitle:
-            'We started Kagency because great work rarely comes from siloed agencies. Design, engineering, and strategy need to breathe the same air.',
-        },
-        { bgColor: '#242424' },
-      ),
-      section(
-        {
-          blockType: 'projectsGrid',
-          title: 'Work We Are Proud Of',
-          featuredOnly: false,
-          limit: 4,
-        },
-        { bgColor: '#f4f4f0' },
-      ),
-    ],
-  },
-})
-console.log('  ✓ page: about')
-
-// ── Contact ───────────────────────────────────────────────────────────────
-
-await payload.create({
-  collection: 'pages',
-  data: {
-    title: 'Contact',
-    slug: 'contact',
-    excerpt: 'Start a conversation.',
-    layout: [
-      section(
-        {
-          blockType: 'contactForm',
-          title: "Let's Talk",
-          subtitle: 'Tell us about your project. We will get back to you within one business day.',
-        },
-        { bgColor: '#242424' },
-      ),
-    ],
-  },
-})
-console.log('  ✓ page: contact')
-
-console.log('\n✅  Seed complete.')
+console.log('\nSeed complete (services + projects + media + home).')
+console.log('Run dedicated seeds for the other pages:')
+console.log('  npm run seed:about       npm run seed:services')
+console.log('  npm run seed:the-agency  npm run seed:contact')
+console.log('  npm run seed:legal       npm run seed:testimonials')
 process.exit(0)

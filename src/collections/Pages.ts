@@ -24,6 +24,11 @@ const ANIM_TYPE_OPTIONS = [
   { label: 'Slide Right', value: 'slide-right' },
 
   { label: 'Stagger Words', value: 'stagger-words' },
+  { label: 'Scale', value: 'scale' },
+  { label: 'Scale Up', value: 'scale-up' },
+  { label: 'Scale Down', value: 'scale-down' },
+  { label: 'Scale Left', value: 'scale-left' },
+  { label: 'Scale Right', value: 'scale-right' },
 ]
 
 const ANIM_EASING_OPTIONS = [
@@ -107,120 +112,32 @@ const riveBlockFields = [
   // --- State machine ---------------------------------------
 
   {
-    type: 'row' as const,
+    name: 'stateMachine',
 
-    fields: [
-      {
-        name: 'stateMachine',
+    type: 'text' as const,
 
-        type: 'text' as const,
+    label: 'State machine name',
 
-        label: 'State machine name',
-
-        admin: {
-          description: 'Name of the state machine to activate (optional).',
-        },
-      },
-
-      {
-        name: 'scrollInput',
-
-        type: 'text' as const,
-
-        label: 'Scroll input name',
-
-        admin: {
-          description:
-            'Name of a 0�100 Number input in the state machine to drive with scroll progress. Recommended for state-machine-based scroll scrub.',
-        },
-      },
-    ],
+    admin: {
+      description: 'Name of the state machine to activate (optional).',
+    },
   },
 
   // --- Playback --------------------------------------------
 
   {
-    type: 'row' as const,
+    name: 'mode',
 
-    fields: [
-      {
-        name: 'mode',
+    type: 'select' as const,
 
-        type: 'select' as const,
+    label: 'Playback mode',
 
-        label: 'Playback mode',
+    defaultValue: 'autoplay',
 
-        defaultValue: 'autoplay',
+    options: [
+      { label: 'Autoplay (once)', value: 'autoplay' },
 
-        options: [
-          { label: 'Autoplay', value: 'autoplay' },
-
-          { label: 'Loop', value: 'loop' },
-
-          { label: 'Scroll scrub', value: 'scroll-scrub' },
-        ],
-      },
-
-      {
-        name: 'animDuration',
-
-        type: 'number' as const,
-
-        label: 'Animation duration (s)',
-
-        defaultValue: 2,
-
-        min: 0.1,
-
-        max: 120,
-
-        admin: {
-          description:
-            'Duration of the animation in seconds. Required for direct timeline scrub (when no scroll input is set).',
-
-          condition: (_: unknown, s: { mode?: string }) => s?.mode === 'scroll-scrub',
-        },
-      },
-    ],
-  },
-
-  // --- Scroll scrub range ----------------------------------
-
-  {
-    type: 'row' as const,
-
-    fields: [
-      {
-        name: 'scrubStart',
-
-        type: 'text' as const,
-
-        label: 'Scrub start',
-
-        defaultValue: 'top 80%',
-
-        admin: {
-          description: 'GSAP ScrollTrigger start, e.g. "top 80%". Scrubbing begins here.',
-
-          condition: (_: unknown, s: { mode?: string }) => s?.mode === 'scroll-scrub',
-        },
-      },
-
-      {
-        name: 'scrubEnd',
-
-        type: 'text' as const,
-
-        label: 'Scrub end',
-
-        defaultValue: 'bottom 20%',
-
-        admin: {
-          description: 'GSAP ScrollTrigger end, e.g. "bottom 20%". Scrubbing ends here.',
-
-          condition: (_: unknown, s: { mode?: string }) => s?.mode === 'scroll-scrub',
-        },
-      },
+      { label: 'Loop', value: 'loop' },
     ],
   },
 
@@ -305,6 +222,271 @@ const riveBlockFields = [
           { label: '3 : 4', value: '3/4' },
 
           { label: 'Auto (fill height)', value: 'auto' },
+        ],
+      },
+    ],
+  },
+
+  // --- Scroll transform ------------------------------------
+
+  {
+    type: 'collapsible' as const,
+
+    label: 'Scroll transform',
+
+    admin: { initCollapsed: true },
+
+    fields: [
+      {
+        name: 'stEnabled',
+        type: 'checkbox' as const,
+        label: 'Enable scroll transform',
+        defaultValue: false,
+        admin: { description: 'Animate this element with GSAP as it scrolls into view.' },
+      },
+
+      {
+        type: 'row' as const,
+        fields: [
+          {
+            name: 'stStart',
+            type: 'text' as const,
+            label: 'Trigger start',
+            defaultValue: 'top bottom',
+            admin: {
+              description: 'e.g. "top bottom", "top 80%"',
+              condition: (_: unknown, s: { stEnabled?: boolean }) => !!s?.stEnabled,
+            },
+          },
+          {
+            name: 'stEnd',
+            type: 'text' as const,
+            label: 'Trigger end',
+            defaultValue: 'top 20%',
+            admin: {
+              description: 'e.g. "top 20%", "center center"',
+              condition: (_: unknown, s: { stEnabled?: boolean }) => !!s?.stEnabled,
+            },
+          },
+          {
+            name: 'stScrub',
+            type: 'number' as const,
+            label: 'Scrub (s)',
+            defaultValue: 1,
+            min: 0,
+            max: 10,
+            admin: {
+              description: '0 = rigid lock to scroll, >0 = lag in seconds',
+              condition: (_: unknown, s: { stEnabled?: boolean }) => !!s?.stEnabled,
+            },
+          },
+        ],
+      },
+
+      {
+        type: 'row' as const,
+        fields: [
+          {
+            name: 'stXFrom',
+            type: 'number' as const,
+            label: 'X from (px)',
+            admin: {
+              description: 'Leave blank to skip. e.g. 200 = slide in from right',
+              condition: (_: unknown, s: { stEnabled?: boolean }) => !!s?.stEnabled,
+            },
+          },
+          {
+            name: 'stXTo',
+            type: 'number' as const,
+            label: 'X to (px)',
+            defaultValue: 0,
+            admin: { condition: (_: unknown, s: { stEnabled?: boolean }) => !!s?.stEnabled },
+          },
+        ],
+      },
+
+      {
+        type: 'row' as const,
+        fields: [
+          {
+            name: 'stYFrom',
+            type: 'number' as const,
+            label: 'Y from (px)',
+            admin: {
+              description: 'Leave blank to skip. e.g. 100 = slide in from below',
+              condition: (_: unknown, s: { stEnabled?: boolean }) => !!s?.stEnabled,
+            },
+          },
+          {
+            name: 'stYTo',
+            type: 'number' as const,
+            label: 'Y to (px)',
+            defaultValue: 0,
+            admin: { condition: (_: unknown, s: { stEnabled?: boolean }) => !!s?.stEnabled },
+          },
+        ],
+      },
+
+      {
+        type: 'row' as const,
+        fields: [
+          {
+            name: 'stScaleFrom',
+            type: 'number' as const,
+            label: 'Scale from',
+            admin: {
+              description: 'Leave blank to skip. e.g. 0.8 = scale up on entrance',
+              condition: (_: unknown, s: { stEnabled?: boolean }) => !!s?.stEnabled,
+            },
+          },
+          {
+            name: 'stScaleTo',
+            type: 'number' as const,
+            label: 'Scale to',
+            defaultValue: 1,
+            admin: { condition: (_: unknown, s: { stEnabled?: boolean }) => !!s?.stEnabled },
+          },
+        ],
+      },
+
+      {
+        type: 'row' as const,
+        fields: [
+          {
+            name: 'stOpacityFrom',
+            type: 'number' as const,
+            label: 'Opacity from',
+            min: 0,
+            max: 1,
+            admin: {
+              description: 'Leave blank to skip. e.g. 0 = fade in',
+              condition: (_: unknown, s: { stEnabled?: boolean }) => !!s?.stEnabled,
+            },
+          },
+          {
+            name: 'stOpacityTo',
+            type: 'number' as const,
+            label: 'Opacity to',
+            defaultValue: 1,
+            min: 0,
+            max: 1,
+            admin: { condition: (_: unknown, s: { stEnabled?: boolean }) => !!s?.stEnabled },
+          },
+        ],
+      },
+
+      {
+        name: 'stMobileOverride',
+        type: 'checkbox' as const,
+        label: 'Different values on mobile',
+        defaultValue: false,
+        admin: {
+          description: 'Set separate from/to values for screens below lg (1024px)',
+          condition: (_: unknown, s: { stEnabled?: boolean }) => !!s?.stEnabled,
+        },
+      },
+
+      {
+        type: 'row' as const,
+        fields: [
+          {
+            name: 'stMobileXFrom',
+            type: 'number' as const,
+            label: 'Mobile X from (px)',
+            admin: {
+              condition: (_: unknown, s: { stEnabled?: boolean; stMobileOverride?: boolean }) =>
+                !!s?.stEnabled && !!s?.stMobileOverride,
+            },
+          },
+          {
+            name: 'stMobileXTo',
+            type: 'number' as const,
+            label: 'Mobile X to (px)',
+            defaultValue: 0,
+            admin: {
+              condition: (_: unknown, s: { stEnabled?: boolean; stMobileOverride?: boolean }) =>
+                !!s?.stEnabled && !!s?.stMobileOverride,
+            },
+          },
+        ],
+      },
+
+      {
+        type: 'row' as const,
+        fields: [
+          {
+            name: 'stMobileYFrom',
+            type: 'number' as const,
+            label: 'Mobile Y from (px)',
+            admin: {
+              condition: (_: unknown, s: { stEnabled?: boolean; stMobileOverride?: boolean }) =>
+                !!s?.stEnabled && !!s?.stMobileOverride,
+            },
+          },
+          {
+            name: 'stMobileYTo',
+            type: 'number' as const,
+            label: 'Mobile Y to (px)',
+            defaultValue: 0,
+            admin: {
+              condition: (_: unknown, s: { stEnabled?: boolean; stMobileOverride?: boolean }) =>
+                !!s?.stEnabled && !!s?.stMobileOverride,
+            },
+          },
+        ],
+      },
+
+      {
+        type: 'row' as const,
+        fields: [
+          {
+            name: 'stMobileScaleFrom',
+            type: 'number' as const,
+            label: 'Mobile scale from',
+            admin: {
+              condition: (_: unknown, s: { stEnabled?: boolean; stMobileOverride?: boolean }) =>
+                !!s?.stEnabled && !!s?.stMobileOverride,
+            },
+          },
+          {
+            name: 'stMobileScaleTo',
+            type: 'number' as const,
+            label: 'Mobile scale to',
+            defaultValue: 1,
+            admin: {
+              condition: (_: unknown, s: { stEnabled?: boolean; stMobileOverride?: boolean }) =>
+                !!s?.stEnabled && !!s?.stMobileOverride,
+            },
+          },
+        ],
+      },
+
+      {
+        type: 'row' as const,
+        fields: [
+          {
+            name: 'stMobileOpacityFrom',
+            type: 'number' as const,
+            label: 'Mobile opacity from',
+            min: 0,
+            max: 1,
+            admin: {
+              condition: (_: unknown, s: { stEnabled?: boolean; stMobileOverride?: boolean }) =>
+                !!s?.stEnabled && !!s?.stMobileOverride,
+            },
+          },
+          {
+            name: 'stMobileOpacityTo',
+            type: 'number' as const,
+            label: 'Mobile opacity to',
+            defaultValue: 1,
+            min: 0,
+            max: 1,
+            admin: {
+              condition: (_: unknown, s: { stEnabled?: boolean; stMobileOverride?: boolean }) =>
+                !!s?.stEnabled && !!s?.stMobileOverride,
+            },
+          },
         ],
       },
     ],
@@ -424,6 +606,10 @@ const backgroundsField = {
         { label: 'Image', value: 'image' },
 
         { label: 'Inline SVG', value: 'svg' },
+
+        { label: 'Video', value: 'video' },
+
+        { label: 'Rive Animation', value: 'rive' },
       ],
     },
 
@@ -460,6 +646,81 @@ const backgroundsField = {
 
       admin: {
         condition: (_: unknown, siblingData: { type?: string }) => siblingData?.type === 'image',
+      },
+    },
+
+    {
+      name: 'videoSrc',
+
+      type: 'text' as const,
+
+      label: 'Video URL / path',
+
+      admin: {
+        description: 'Absolute URL or /media/… path to an mp4/webm file.',
+
+        condition: (_: unknown, siblingData: { type?: string }) => siblingData?.type === 'video',
+      },
+    },
+
+    {
+      name: 'videoFile',
+
+      type: 'upload' as const,
+
+      relationTo: 'media' as const,
+
+      label: 'Video File (Media Library)',
+
+      admin: {
+        description:
+          'Pick a video from the Media Library. Takes precedence over Video URL if both are set.',
+
+        condition: (_: unknown, siblingData: { type?: string }) => siblingData?.type === 'video',
+      },
+    },
+
+    {
+      name: 'videoAutoplay',
+
+      type: 'checkbox' as const,
+
+      label: 'Autoplay',
+
+      defaultValue: true,
+
+      admin: {
+        condition: (_: unknown, siblingData: { type?: string }) => siblingData?.type === 'video',
+      },
+    },
+
+    {
+      name: 'videoLoop',
+
+      type: 'checkbox' as const,
+
+      label: 'Loop',
+
+      defaultValue: true,
+
+      admin: {
+        condition: (_: unknown, siblingData: { type?: string }) => siblingData?.type === 'video',
+      },
+    },
+
+    {
+      name: 'videoMuted',
+
+      type: 'checkbox' as const,
+
+      label: 'Muted',
+
+      defaultValue: true,
+
+      admin: {
+        description: 'Must be true for autoplay to work in most browsers.',
+
+        condition: (_: unknown, siblingData: { type?: string }) => siblingData?.type === 'video',
       },
     },
 
@@ -547,6 +808,274 @@ const backgroundsField = {
 
         condition: (_: unknown, siblingData: { type?: string }) => siblingData?.type === 'svg',
       },
+    },
+
+    // ── Rive background fields ───────────────────────────────────────────
+
+    {
+      name: 'riveFile',
+
+      type: 'upload' as const,
+
+      relationTo: 'media' as const,
+
+      label: 'Rive File (.riv)',
+
+      admin: {
+        description: 'Upload a .riv file from the Media library. Takes priority over the URL field.',
+
+        condition: (_: unknown, siblingData: { type?: string }) => siblingData?.type === 'rive',
+      },
+    },
+
+    {
+      name: 'riveUrl',
+
+      type: 'text' as const,
+
+      label: 'Rive URL (fallback)',
+
+      admin: {
+        description: 'External URL to a .riv file. Used only when no file is uploaded above.',
+
+        condition: (_: unknown, siblingData: { type?: string }) => siblingData?.type === 'rive',
+      },
+    },
+
+    {
+      type: 'row' as const,
+
+      fields: [
+        {
+          name: 'riveArtboard',
+
+          type: 'text' as const,
+
+          label: 'Artboard name',
+
+          admin: {
+            description: 'Leave blank for the file\'s default artboard.',
+
+            condition: (_: unknown, siblingData: { type?: string }) => siblingData?.type === 'rive',
+          },
+        },
+
+        {
+          name: 'riveStateMachine',
+
+          type: 'text' as const,
+
+          label: 'State machine name',
+
+          admin: {
+            condition: (_: unknown, siblingData: { type?: string }) => siblingData?.type === 'rive',
+          },
+        },
+      ],
+    },
+
+    {
+      type: 'row' as const,
+
+      fields: [
+        {
+          name: 'riveFit',
+
+          type: 'select' as const,
+
+          label: 'Fit',
+
+          defaultValue: 'cover',
+
+          options: [
+            { label: 'Cover', value: 'cover' },
+            { label: 'Contain', value: 'contain' },
+            { label: 'Fill', value: 'fill' },
+            { label: 'Fit Width', value: 'fitWidth' },
+            { label: 'Fit Height', value: 'fitHeight' },
+            { label: 'Scale Down', value: 'scaleDown' },
+            { label: 'None', value: 'none' },
+          ],
+
+          admin: {
+            condition: (_: unknown, siblingData: { type?: string }) => siblingData?.type === 'rive',
+          },
+        },
+
+        {
+          name: 'riveAlignment',
+
+          type: 'select' as const,
+
+          label: 'Alignment',
+
+          defaultValue: 'center',
+
+          options: [
+            { label: 'Center', value: 'center' },
+            { label: 'Top left', value: 'topLeft' },
+            { label: 'Top center', value: 'topCenter' },
+            { label: 'Top right', value: 'topRight' },
+            { label: 'Center left', value: 'centerLeft' },
+            { label: 'Center right', value: 'centerRight' },
+            { label: 'Bottom left', value: 'bottomLeft' },
+            { label: 'Bottom center', value: 'bottomCenter' },
+            { label: 'Bottom right', value: 'bottomRight' },
+          ],
+
+          admin: {
+            condition: (_: unknown, siblingData: { type?: string }) => siblingData?.type === 'rive',
+          },
+        },
+      ],
+    },
+
+    // ── Rive scroll scrub ────────────────────────────────────────────────
+
+    {
+      name: 'riveScrubEnabled',
+
+      type: 'checkbox' as const,
+
+      label: 'Enable scroll scrub (drive Rive input from scroll)',
+
+      defaultValue: false,
+
+      admin: {
+        condition: (_: unknown, siblingData: { type?: string }) => siblingData?.type === 'rive',
+      },
+    },
+
+    {
+      name: 'riveScrubProperty',
+
+      type: 'text' as const,
+
+      label: 'Rive input name',
+
+      admin: {
+        description: 'Name of the Number or Boolean state machine input to scrub.',
+
+        condition: (_: unknown, siblingData: { type?: string; riveScrubEnabled?: boolean }) =>
+          siblingData?.type === 'rive' && !!siblingData?.riveScrubEnabled,
+      },
+    },
+
+    {
+      name: 'riveScrubInputType',
+
+      type: 'select' as const,
+
+      label: 'Input type',
+
+      defaultValue: 'number',
+
+      options: [
+        { label: 'Number', value: 'number' },
+        { label: 'Boolean (triggered at 50% scroll)', value: 'boolean' },
+      ],
+
+      admin: {
+        condition: (_: unknown, siblingData: { type?: string; riveScrubEnabled?: boolean }) =>
+          siblingData?.type === 'rive' && !!siblingData?.riveScrubEnabled,
+      },
+    },
+
+    {
+      type: 'row' as const,
+
+      fields: [
+        {
+          name: 'riveScrubMin',
+
+          type: 'number' as const,
+
+          label: 'Value at scroll start',
+
+          defaultValue: 0,
+
+          admin: {
+            condition: (_: unknown, siblingData: { type?: string; riveScrubEnabled?: boolean }) =>
+              siblingData?.type === 'rive' && !!siblingData?.riveScrubEnabled,
+          },
+        },
+
+        {
+          name: 'riveScrubMax',
+
+          type: 'number' as const,
+
+          label: 'Value at scroll end',
+
+          defaultValue: 100,
+
+          admin: {
+            condition: (_: unknown, siblingData: { type?: string; riveScrubEnabled?: boolean }) =>
+              siblingData?.type === 'rive' && !!siblingData?.riveScrubEnabled,
+          },
+        },
+      ],
+    },
+
+    {
+      type: 'row' as const,
+
+      fields: [
+        {
+          name: 'riveScrubStart',
+
+          type: 'text' as const,
+
+          label: 'Scroll trigger start',
+
+          defaultValue: 'top bottom',
+
+          admin: {
+            description: 'e.g. "top bottom", "top 80%"',
+
+            condition: (_: unknown, siblingData: { type?: string; riveScrubEnabled?: boolean }) =>
+              siblingData?.type === 'rive' && !!siblingData?.riveScrubEnabled,
+          },
+        },
+
+        {
+          name: 'riveScrubEnd',
+
+          type: 'text' as const,
+
+          label: 'Scroll trigger end',
+
+          defaultValue: 'bottom top',
+
+          admin: {
+            description: 'e.g. "bottom top", "bottom 20%"',
+
+            condition: (_: unknown, siblingData: { type?: string; riveScrubEnabled?: boolean }) =>
+              siblingData?.type === 'rive' && !!siblingData?.riveScrubEnabled,
+          },
+        },
+
+        {
+          name: 'riveScrubStrength',
+
+          type: 'number' as const,
+
+          label: 'Scrub lag (s)',
+
+          defaultValue: 0.5,
+
+          min: 0,
+
+          max: 10,
+
+          admin: {
+            description: '0 = snap to scroll. >0 = lag in seconds.',
+
+            condition: (_: unknown, siblingData: { type?: string; riveScrubEnabled?: boolean }) =>
+              siblingData?.type === 'rive' && !!siblingData?.riveScrubEnabled,
+          },
+        },
+      ],
     },
 
     {
@@ -753,6 +1282,40 @@ export const Pages: CollectionConfig = {
         },
 
         {
+          type: 'row' as const,
+          fields: [
+            {
+              name: 'headerTheme',
+              type: 'select' as const,
+              label: 'Header theme override',
+              options: [
+                { label: 'Inherit from page', value: 'inherit' },
+                { label: 'Light', value: 'light' },
+                { label: 'Dark', value: 'dark' },
+              ],
+              defaultValue: 'inherit',
+              admin: {
+                description: 'Override the page theme for the header only.',
+              },
+            },
+            {
+              name: 'footerTheme',
+              type: 'select' as const,
+              label: 'Footer theme override',
+              options: [
+                { label: 'Inherit from page', value: 'inherit' },
+                { label: 'Light', value: 'light' },
+                { label: 'Dark', value: 'dark' },
+              ],
+              defaultValue: 'inherit',
+              admin: {
+                description: 'Override the page theme for the footer only.',
+              },
+            },
+          ],
+        },
+
+        {
           name: 'noise',
 
           label: 'Page-wide Noise',
@@ -937,6 +1500,36 @@ export const Pages: CollectionConfig = {
             },
 
             {
+              type: 'row' as const,
+              fields: [
+                {
+                  name: 'minHeightMobile',
+                  type: 'select' as const,
+                  label: 'Min height (mobile)',
+                  defaultValue: 'auto',
+                  options: [
+                    { label: 'Auto', value: 'auto' },
+                    { label: '50vh', value: '50vh' },
+                    { label: '75vh', value: '75vh' },
+                    { label: 'Full screen (100vh)', value: 'screen' },
+                  ],
+                },
+                {
+                  name: 'minHeightDesktop',
+                  type: 'select' as const,
+                  label: 'Min height (desktop)',
+                  defaultValue: 'auto',
+                  options: [
+                    { label: 'Auto', value: 'auto' },
+                    { label: '50vh', value: '50vh' },
+                    { label: '75vh', value: '75vh' },
+                    { label: 'Full screen (100vh)', value: 'screen' },
+                  ],
+                },
+              ],
+            },
+
+            {
               name: 'useNoise',
 
               type: 'select' as const,
@@ -983,6 +1576,63 @@ export const Pages: CollectionConfig = {
                     description: 'GSAP scrub lag in seconds. 0 = rigid, higher = softer.',
                     condition: (_: unknown, s: { containerStyle?: string }) =>
                       s?.containerStyle === 'scroll-jack',
+                  },
+                },
+              ],
+            },
+            // ──             // -- Section entrance animation ---
+            {
+              name: 'entranceAnim',
+              type: 'checkbox' as const,
+              label: 'Enable entrance animation',
+              defaultValue: false,
+              admin: {
+                description: 'Scale / slide / fade this section in as it enters the viewport.',
+                condition: (_: unknown, s: { containerStyle?: string }) =>
+                  s?.containerStyle !== 'scroll-jack',
+              },
+            },
+            {
+              type: 'row' as const,
+              fields: [
+                {
+                  name: 'entranceType',
+                  type: 'select' as const,
+                  label: 'Animation type',
+                  defaultValue: 'scale',
+                  options: ANIM_TYPE_OPTIONS,
+                  admin: {
+                    condition: (
+                      _: unknown,
+                      s: { entranceAnim?: boolean; containerStyle?: string },
+                    ) => !!s?.entranceAnim && s?.containerStyle !== 'scroll-jack',
+                  },
+                },
+                {
+                  name: 'entranceEasing',
+                  type: 'select' as const,
+                  label: 'Easing',
+                  defaultValue: 'ease-out',
+                  options: ANIM_EASING_OPTIONS,
+                  admin: {
+                    condition: (
+                      _: unknown,
+                      s: { entranceAnim?: boolean; containerStyle?: string },
+                    ) => !!s?.entranceAnim && s?.containerStyle !== 'scroll-jack',
+                  },
+                },
+                {
+                  name: 'entranceDuration',
+                  type: 'number' as const,
+                  label: 'Duration (ms)',
+                  defaultValue: 700,
+                  min: 100,
+                  max: 3000,
+                  admin: {
+                    condition: (
+                      _: unknown,
+                      s: { entranceAnim?: boolean; containerStyle?: string },
+                    ) => !!s?.entranceAnim && s?.containerStyle !== 'scroll-jack',
                   },
                 },
               ],
@@ -1123,7 +1773,7 @@ export const Pages: CollectionConfig = {
                   fields: [
                     { name: 'title', type: 'text' as const, required: true },
 
-                    { name: 'subtitle', type: 'textarea' as const, required: true },
+                    { name: 'subtitle', type: 'richText' as const, required: true },
 
                     { name: 'image', type: 'upload' as const, relationTo: 'media' as const },
 
@@ -1189,7 +1839,7 @@ export const Pages: CollectionConfig = {
                   fields: [
                     { name: 'title', type: 'text' as const, required: true },
 
-                    { name: 'subtitle', type: 'textarea' as const },
+                    { name: 'subtitle', type: 'richText' as const },
 
                     {
                       name: 'paddingX',
@@ -1399,7 +2049,7 @@ export const Pages: CollectionConfig = {
                   fields: [
                     { name: 'title', type: 'text' as const, required: true },
 
-                    { name: 'subtitle', type: 'textarea' as const },
+                    { name: 'subtitle', type: 'richText' as const },
 
                     {
                       name: 'paddingX',
@@ -1449,7 +2099,7 @@ export const Pages: CollectionConfig = {
                   fields: [
                     { name: 'title', type: 'text' as const, required: true },
 
-                    { name: 'subtitle', type: 'textarea' as const },
+                    { name: 'subtitle', type: 'richText' as const },
 
                     {
                       name: 'paddingX',
@@ -1789,7 +2439,7 @@ export const Pages: CollectionConfig = {
                       ],
                     },
 
-                    { name: 'body', type: 'textarea' as const },
+                    { name: 'body', type: 'richText' as const },
 
                     {
                       type: 'row' as const,
@@ -2011,6 +2661,65 @@ export const Pages: CollectionConfig = {
                       },
                     },
 
+                    // ── Image size & position ────────────────────────────────
+                    {
+                      type: 'row' as const,
+                      fields: [
+                        {
+                          name: 'imageWidth',
+                          type: 'number' as const,
+                          label: 'Image width (px)',
+                          admin: {
+                            description:
+                              'Optional fixed width in pixels. Leave blank for full width.',
+                            condition: (_: unknown, s: { image?: unknown }) => !!s?.image,
+                          },
+                        },
+                        {
+                          name: 'imageHeight',
+                          type: 'number' as const,
+                          label: 'Image height (px)',
+                          admin: {
+                            description: 'Optional fixed height in pixels.',
+                            condition: (_: unknown, s: { image?: unknown }) => !!s?.image,
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      type: 'row' as const,
+                      fields: [
+                        {
+                          name: 'imagePosition',
+                          type: 'select' as const,
+                          label: 'Image position',
+                          defaultValue: 'below-text',
+                          options: [
+                            { label: 'Above title', value: 'above-title' },
+                            { label: 'Above body text', value: 'above-text' },
+                            { label: 'Below text (default)', value: 'below-text' },
+                          ],
+                          admin: {
+                            condition: (_: unknown, s: { image?: unknown }) => !!s?.image,
+                          },
+                        },
+                        {
+                          name: 'imageAlign',
+                          type: 'select' as const,
+                          label: 'Image alignment',
+                          defaultValue: 'left',
+                          options: [
+                            { label: 'Left', value: 'left' },
+                            { label: 'Center', value: 'center' },
+                            { label: 'Right', value: 'right' },
+                          ],
+                          admin: {
+                            condition: (_: unknown, s: { image?: unknown }) => !!s?.image,
+                          },
+                        },
+                      ],
+                    },
+
                     // ── Colors ──────────────────────────────────────────────
 
                     {
@@ -2041,6 +2750,20 @@ export const Pages: CollectionConfig = {
                               label: 'Heading color',
 
                               admin: { description: 'CSS color' },
+                            },
+
+                            {
+                              name: 'colorHeadingAccent',
+
+                              type: 'text' as const,
+
+                              label: 'Accent color',
+
+                              admin: {
+                                description: 'CSS color for the heading accent text',
+                                condition: (_: unknown, s: { headingAccent?: string }) =>
+                                  !!s?.headingAccent,
+                              },
                             },
 
                             {
@@ -2210,6 +2933,460 @@ export const Pages: CollectionConfig = {
                   labels: { singular: 'Rive Animation', plural: 'Rive Animations' },
 
                   fields: riveBlockFields,
+                },
+                {
+                  slug: 'scrollBeliefs',
+                  labels: { singular: 'Scroll Beliefs', plural: 'Scroll Beliefs' },
+                  fields: [
+                    {
+                      name: 'beliefs',
+                      type: 'array' as const,
+                      label: 'Beliefs',
+                      minRows: 2,
+                      maxRows: 8,
+                      fields: [
+                        { name: 'number', type: 'text' as const, label: 'Number (e.g. 01)' },
+                        {
+                          name: 'eyebrow',
+                          type: 'text' as const,
+                          label: 'Eyebrow (label above title)',
+                        },
+                        { name: 'title', type: 'text' as const, label: 'Title', required: true },
+                        { name: 'body', type: 'richText' as const, label: 'Body text' },
+                      ],
+                    },
+                    {
+                      type: 'row' as const,
+                      fields: [
+                        {
+                          name: 'titleSize',
+                          type: 'select' as const,
+                          label: 'Title size',
+                          defaultValue: 'xl',
+                          options: [
+                            { label: 'SM', value: 'sm' },
+                            { label: 'MD', value: 'md' },
+                            { label: 'LG', value: 'lg' },
+                            { label: 'XL', value: 'xl' },
+                            { label: '2XL', value: '2xl' },
+                            { label: '3XL', value: '3xl' },
+                          ],
+                        },
+                        {
+                          name: 'bodySize',
+                          type: 'select' as const,
+                          label: 'Body size',
+                          defaultValue: 'md',
+                          options: [
+                            { label: 'SM', value: 'sm' },
+                            { label: 'MD', value: 'md' },
+                            { label: 'LG', value: 'lg' },
+                            { label: 'XL', value: 'xl' },
+                            { label: '2XL', value: '2xl' },
+                          ],
+                        },
+                      ],
+                    },
+                    {
+                      name: 'vhPerBelief',
+                      type: 'number' as const,
+                      label: 'Scroll distance per belief (vh)',
+                      defaultValue: 120,
+                      min: 60,
+                      max: 300,
+                      admin: {
+                        description: 'How much scroll each belief captures. Default 120vh.',
+                      },
+                    },
+                    {
+                      name: 'scrub',
+                      type: 'number' as const,
+                      label: 'Scrub smoothness (s)',
+                      defaultValue: 0.8,
+                      min: 0,
+                      max: 3,
+                      admin: { description: 'GSAP scrub lag. 0 = rigid, higher = softer.' },
+                    },
+                    {
+                      name: 'backgroundSvg',
+                      type: 'textarea' as const,
+                      label: 'Background SVG (optional)',
+                      admin: {
+                        description:
+                          'Raw SVG markup rendered decoratively on the right side. Leave empty for no background graphic.',
+                      },
+                    },
+                  ],
+                },
+                {
+                  slug: 'beliefsCounter',
+                  labels: { singular: 'Beliefs Counter', plural: 'Beliefs Counters' },
+                  fields: [
+                    {
+                      name: 'beliefs',
+                      type: 'array' as const,
+                      label: 'Beliefs',
+                      minRows: 2,
+                      maxRows: 8,
+                      fields: [
+                        { name: 'number', type: 'text' as const, label: 'Number (e.g. 01)' },
+                        { name: 'title', type: 'text' as const, label: 'Title', required: true },
+                        { name: 'body', type: 'richText' as const, label: 'Body text' },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  slug: 'aboutPillars',
+                  labels: { singular: 'About Pillars', plural: 'About Pillars' },
+                  fields: [
+                    {
+                      name: 'pillars',
+                      type: 'array' as const,
+                      label: 'Pillars',
+                      minRows: 2,
+                      maxRows: 6,
+                      fields: [
+                        {
+                          name: 'label',
+                          type: 'text' as const,
+                          label: 'Label (large display text)',
+                          required: true,
+                        },
+                        {
+                          name: 'descriptor',
+                          type: 'text' as const,
+                          label: 'Descriptor (small right-aligned text)',
+                        },
+                        { name: 'body', type: 'richText' as const, label: 'Expanded body text' },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  slug: 'servicesShowcase',
+                  labels: { singular: 'Services Showcase', plural: 'Services Showcases' },
+                  fields: [
+                    {
+                      name: 'services',
+                      type: 'array' as const,
+                      label: 'Services',
+                      minRows: 1,
+                      maxRows: 8,
+                      fields: [
+                        {
+                          name: 'eyebrow',
+                          type: 'text' as const,
+                          label: 'Eyebrow (e.g. SERVICE 01 — WEB & MOBILE)',
+                        },
+                        {
+                          name: 'headline',
+                          type: 'text' as const,
+                          label: 'Headline (large display word)',
+                          required: true,
+                        },
+                        { name: 'body', type: 'richText' as const, label: 'Body text' },
+                        {
+                          name: 'bullets',
+                          type: 'array' as const,
+                          label: 'Bullet list (shown on monitor screen)',
+                          fields: [
+                            { name: 'item', type: 'text' as const, label: 'Item', required: true },
+                          ],
+                        },
+                      ],
+                    },
+                    {
+                      type: 'row' as const,
+                      fields: [
+                        {
+                          name: 'vhPerService',
+                          type: 'number' as const,
+                          label: 'Scroll distance per service (vh)',
+                          defaultValue: 150,
+                          min: 60,
+                          max: 300,
+                          admin: {
+                            description: 'How much scroll each service captures. Default 150vh.',
+                          },
+                        },
+                        {
+                          name: 'scrub',
+                          type: 'number' as const,
+                          label: 'Scrub smoothness (s)',
+                          defaultValue: 0.6,
+                          min: 0,
+                          max: 3,
+                          admin: { description: 'GSAP scrub lag. 0 = rigid, higher = softer.' },
+                        },
+                        {
+                          name: 'paddingX',
+                          type: 'select' as const,
+                          label: 'Padding left/right',
+                          defaultValue: 'xl',
+                          options: [
+                            { label: 'None', value: 'none' },
+                            { label: 'Small', value: 'sm' },
+                            { label: 'Medium', value: 'md' },
+                            { label: 'Large', value: 'lg' },
+                            { label: 'X-Large', value: 'xl' },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  slug: 'consolidationBlock',
+                  labels: { singular: 'Consolidation Block', plural: 'Consolidation Blocks' },
+                  fields: [
+                    {
+                      name: 'titleLine1',
+                      type: 'text' as const,
+                      label: 'Title — line 1 (white)',
+                      required: true,
+                    },
+                    {
+                      name: 'titleLine2',
+                      type: 'text' as const,
+                      label: 'Title — line 2 (accent colour)',
+                      required: true,
+                    },
+                    { name: 'body', type: 'richText' as const, label: 'Body text' },
+                    {
+                      name: 'paddingX',
+                      type: 'select' as const,
+                      label: 'Padding left/right',
+                      defaultValue: 'xl',
+                      options: [
+                        { label: 'None', value: 'none' },
+                        { label: 'Small', value: 'sm' },
+                        { label: 'Medium', value: 'md' },
+                        { label: 'Large', value: 'lg' },
+                        { label: 'X-Large', value: 'xl' },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  slug: 'testimonialsBlock',
+                  labels: { singular: 'Testimonials', plural: 'Testimonials' },
+                  fields: [
+                    { name: 'title', type: 'text' as const },
+                    { name: 'subtitle', type: 'richText' as const },
+                    {
+                      name: 'featuredOnly',
+                      type: 'checkbox' as const,
+                      defaultValue: false,
+                      admin: { description: 'Only show testimonials marked as featured.' },
+                    },
+                    {
+                      name: 'limit',
+                      type: 'number' as const,
+                      min: 1,
+                      max: 50,
+                      admin: {
+                        description: 'Maximum number of testimonials to show. Leave empty for all.',
+                      },
+                    },
+                    {
+                      name: 'paddingX',
+                      type: 'select' as const,
+                      label: 'Padding left/right',
+                      defaultValue: 'md',
+                      options: [
+                        { label: 'None', value: 'none' },
+                        { label: 'Small', value: 'sm' },
+                        { label: 'Medium', value: 'md' },
+                        { label: 'Large', value: 'lg' },
+                        { label: 'X-Large', value: 'xl' },
+                      ],
+                    },
+                  ],
+                },
+                // ── Logo Carousel ─────────────────────────────────────────
+                {
+                  slug: 'logoCarousel',
+                  labels: { singular: 'Logo Carousel', plural: 'Logo Carousels' },
+                  fields: [
+                    // Logos array
+                    {
+                      name: 'logos',
+                      type: 'array' as const,
+                      label: 'Logos',
+                      minRows: 1,
+                      fields: [
+                        {
+                          name: 'image',
+                          type: 'upload' as const,
+                          relationTo: 'media' as const,
+                          required: true,
+                          admin: { description: 'Accepts SVG and PNG.' },
+                        },
+                        { name: 'alt', type: 'text' as const, label: 'Alt text' },
+                        { name: 'href', type: 'text' as const, label: 'Link URL (optional)' },
+                        { name: 'label', type: 'text' as const, label: 'Caption label (optional)' },
+                      ],
+                    },
+                    // Layout row
+                    {
+                      type: 'row' as const,
+                      fields: [
+                        {
+                          name: 'rows',
+                          type: 'select' as const,
+                          label: 'Rows',
+                          defaultValue: '1',
+                          options: [
+                            { label: '1', value: '1' },
+                            { label: '2', value: '2' },
+                            { label: '3', value: '3' },
+                          ],
+                        },
+                        {
+                          name: 'direction',
+                          type: 'select' as const,
+                          label: 'Direction',
+                          defaultValue: 'left',
+                          options: [
+                            { label: 'Left (default)', value: 'left' },
+                            { label: 'Right', value: 'right' },
+                            { label: 'Up', value: 'up' },
+                            { label: 'Down', value: 'down' },
+                          ],
+                        },
+                        {
+                          name: 'alternateRows',
+                          type: 'checkbox' as const,
+                          label: 'Alternate row direction',
+                          defaultValue: true,
+                          admin: {
+                            description: 'Even rows scroll in the opposite direction.',
+                          },
+                        },
+                      ],
+                    },
+                    // Speed & gap row
+                    {
+                      type: 'row' as const,
+                      fields: [
+                        {
+                          name: 'speed',
+                          type: 'number' as const,
+                          label: 'Duration (s) — lower = faster',
+                          defaultValue: 40,
+                          min: 5,
+                          max: 300,
+                          admin: {
+                            description: 'Seconds to complete one full loop. Default 40.',
+                          },
+                        },
+                        {
+                          name: 'gap',
+                          type: 'select' as const,
+                          label: 'Gap between logos',
+                          defaultValue: 'lg',
+                          options: [
+                            { label: 'Small (16px)', value: 'sm' },
+                            { label: 'Medium (32px)', value: 'md' },
+                            { label: 'Large (56px)', value: 'lg' },
+                            { label: 'X-Large (80px)', value: 'xl' },
+                          ],
+                        },
+                        {
+                          name: 'rowGap',
+                          type: 'select' as const,
+                          label: 'Gap between rows',
+                          defaultValue: 'md',
+                          options: [
+                            { label: 'Small (12px)', value: 'sm' },
+                            { label: 'Medium (24px)', value: 'md' },
+                            { label: 'Large (40px)', value: 'lg' },
+                          ],
+                        },
+                      ],
+                    },
+                    // Logo height & options row
+                    {
+                      type: 'row' as const,
+                      fields: [
+                        {
+                          name: 'logoHeight',
+                          type: 'number' as const,
+                          label: 'Logo height (px)',
+                          defaultValue: 48,
+                          min: 16,
+                          max: 200,
+                        },
+                        {
+                          name: 'pauseOnHover',
+                          type: 'checkbox' as const,
+                          label: 'Pause on hover',
+                          defaultValue: true,
+                        },
+                        {
+                          name: 'fadeEdges',
+                          type: 'checkbox' as const,
+                          label: 'Fade edges',
+                          defaultValue: true,
+                          admin: {
+                            description: 'Gradient fade mask on the leading/trailing edges.',
+                          },
+                        },
+                        {
+                          name: 'grayscale',
+                          type: 'checkbox' as const,
+                          label: 'Grayscale logos',
+                          defaultValue: false,
+                        },
+                      ],
+                    },
+                    // Padding row
+                    {
+                      type: 'row' as const,
+                      fields: [
+                        {
+                          name: 'paddingTop',
+                          type: 'select' as const,
+                          label: 'Padding top',
+                          defaultValue: 'md',
+                          options: [
+                            { label: 'None', value: 'none' },
+                            { label: 'Small', value: 'sm' },
+                            { label: 'Medium', value: 'md' },
+                            { label: 'Large', value: 'lg' },
+                            { label: 'X-Large', value: 'xl' },
+                          ],
+                        },
+                        {
+                          name: 'paddingBottom',
+                          type: 'select' as const,
+                          label: 'Padding bottom',
+                          defaultValue: 'md',
+                          options: [
+                            { label: 'None', value: 'none' },
+                            { label: 'Small', value: 'sm' },
+                            { label: 'Medium', value: 'md' },
+                            { label: 'Large', value: 'lg' },
+                            { label: 'X-Large', value: 'xl' },
+                          ],
+                        },
+                        {
+                          name: 'paddingX',
+                          type: 'select' as const,
+                          label: 'Padding left/right',
+                          defaultValue: 'none',
+                          options: [
+                            { label: 'None', value: 'none' },
+                            { label: 'Small', value: 'sm' },
+                            { label: 'Medium', value: 'md' },
+                            { label: 'Large', value: 'lg' },
+                            { label: 'X-Large', value: 'xl' },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
                 },
               ],
             },

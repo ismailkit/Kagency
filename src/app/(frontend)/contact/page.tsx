@@ -2,7 +2,13 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { PageBlocks } from '@/components/PageBlocks'
-import { getPage, getProjects, getServices, resolveWorksCategories } from '@/lib/cms'
+import {
+  getPage,
+  getProjects,
+  getServices,
+  getTestimonials,
+  resolveWorksCategories,
+} from '@/lib/cms'
 
 export const metadata: Metadata = {
   title: 'Contact',
@@ -10,10 +16,11 @@ export const metadata: Metadata = {
 }
 
 export default async function ContactPage() {
-  const [page, services, projects] = await Promise.all([
+  const [page, services, projects, testimonials] = await Promise.all([
     getPage('contact'),
     getServices(),
     getProjects(),
+    getTestimonials(),
   ])
 
   if (!page?.layout || page.layout.length === 0) {
@@ -27,6 +34,7 @@ export default async function ContactPage() {
       blocks={page.layout}
       services={services}
       projects={projects}
+      testimonials={testimonials}
       projectsByCategory={projectsByCategory}
       pageSettings={page.pageSettings}
     />

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { League_Spartan } from 'next/font/google'
+import { League_Spartan, VT323 } from 'next/font/google'
 import localFont from 'next/font/local'
 import './globals.css'
 
@@ -61,6 +61,12 @@ const leagueSpartan = League_Spartan({
   subsets: ['latin'],
 })
 
+const vt323 = VT323({
+  variable: '--font-pixel',
+  subsets: ['latin'],
+  weight: '400',
+})
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
   title: {
@@ -89,10 +95,10 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${prequel.variable} ${leagueSpartan.variable} ${pcd.variable}`}
+      className={`${prequel.variable} ${leagueSpartan.variable} ${pcd.variable} ${vt323.variable}`}
       suppressHydrationWarning
     >
-      <body className="min-h-screen bg-white text-kblack-500 antialiased">
+      <body className="min-h-screen text-kblack-500 antialiased">
         <PageSettingsProvider>
           <Header />
           <main className="flex-1 overflow-hidden">{children}</main>

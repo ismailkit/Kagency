@@ -10,6 +10,7 @@ import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
 import { Projects } from './collections/Projects'
 import { Services } from './collections/Services'
+import { Testimonials } from './collections/Testimonials'
 import { Users } from './collections/Users'
 import { SiteSettings } from './globals/SiteSettings'
 
@@ -40,7 +41,7 @@ export default buildConfig({
     },
     suppressHydrationWarning: true,
   },
-  collections: [Users, Media, Pages, Services, Projects, ContactSubmissions],
+  collections: [Users, Media, Pages, Services, Projects, ContactSubmissions, Testimonials],
   globals: [SiteSettings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
