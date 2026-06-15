@@ -377,7 +377,12 @@ export function SectionBlock({
         ))}
         {riveLayers.map((layer, i) =>
           layer.riveUrl ? (
-            <div key={`rive-${i}`} aria-hidden="true" className="section-bg-layer" style={{ overflow: 'hidden' }}>
+            <div
+              key={`rive-${i}`}
+              aria-hidden="true"
+              className="section-bg-layer"
+              style={{ overflow: 'hidden' }}
+            >
               <RiveBackground
                 src={layer.riveUrl}
                 artboard={layer.riveArtboard}
@@ -510,7 +515,12 @@ export function SectionBlock({
       {/* Rive animation bg layers */}
       {riveLayers.map((layer, i) =>
         layer.riveUrl ? (
-          <div key={`rive-${i}`} aria-hidden="true" className="section-bg-layer" style={{ overflow: 'hidden' }}>
+          <div
+            key={`rive-${i}`}
+            aria-hidden="true"
+            className="section-bg-layer"
+            style={{ overflow: 'hidden' }}
+          >
             <RiveBackground
               src={layer.riveUrl}
               artboard={layer.riveArtboard}

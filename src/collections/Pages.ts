@@ -822,7 +822,8 @@ const backgroundsField = {
       label: 'Rive File (.riv)',
 
       admin: {
-        description: 'Upload a .riv file from the Media library. Takes priority over the URL field.',
+        description:
+          'Upload a .riv file from the Media library. Takes priority over the URL field.',
 
         condition: (_: unknown, siblingData: { type?: string }) => siblingData?.type === 'rive',
       },
@@ -854,7 +855,7 @@ const backgroundsField = {
           label: 'Artboard name',
 
           admin: {
-            description: 'Leave blank for the file\'s default artboard.',
+            description: "Leave blank for the file's default artboard.",
 
             condition: (_: unknown, siblingData: { type?: string }) => siblingData?.type === 'rive',
           },

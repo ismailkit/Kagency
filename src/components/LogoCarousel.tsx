@@ -128,7 +128,14 @@ function LogoCard({
 
   const inner = (
     <div
-      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flexShrink: 0, marginRight: gap }}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 6,
+        flexShrink: 0,
+        marginRight: gap,
+      }}
     >
       {img}
       {item.label && (
@@ -202,7 +209,11 @@ function MarqueeRow({
           }}
         >
           {doubled.map((item, i) => (
-            <div key={i} style={{ marginBottom: gap, flexShrink: 0 }} aria-hidden={i >= logos.length}>
+            <div
+              key={i}
+              style={{ marginBottom: gap, flexShrink: 0 }}
+              aria-hidden={i >= logos.length}
+            >
               <LogoCard item={item} height={logoHeight} grayscale={grayscale} gap={0} />
             </div>
           ))}
@@ -212,10 +223,7 @@ function MarqueeRow({
   }
 
   return (
-    <div
-      className={wrapperClass}
-      style={{ overflow: 'hidden', position: 'relative' }}
-    >
+    <div className={wrapperClass} style={{ overflow: 'hidden', position: 'relative' }}>
       <div
         className={trackClass}
         style={{
@@ -289,12 +297,16 @@ export function LogoCarousel({
   const maskStyle: React.CSSProperties = fadeEdges
     ? isV
       ? {
-          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)',
-          maskImage: 'linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)',
+          WebkitMaskImage:
+            'linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)',
+          maskImage:
+            'linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)',
         }
       : {
-          WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)',
-          maskImage: 'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)',
+          WebkitMaskImage:
+            'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)',
+          maskImage:
+            'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)',
         }
     : {}
 
@@ -305,13 +317,9 @@ export function LogoCarousel({
     >
       <style dangerouslySetInnerHTML={{ __html: css }} />
       {Array.from({ length: clampedRows }).map((_, rowIndex) => {
-        const rowDir =
-          alternateRows && rowIndex % 2 === 1 ? oppositeDir(direction) : direction
+        const rowDir = alternateRows && rowIndex % 2 === 1 ? oppositeDir(direction) : direction
         return (
-          <div
-            key={rowIndex}
-            style={rowIndex > 0 ? { marginTop: rowGapPx } : undefined}
-          >
+          <div key={rowIndex} style={rowIndex > 0 ? { marginTop: rowGapPx } : undefined}>
             <MarqueeRow
               logos={logos}
               direction={rowDir}

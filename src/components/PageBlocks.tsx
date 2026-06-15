@@ -605,10 +605,13 @@ export function PageBlocks({
                   src={riveSrc}
                   artboard={riveLayer.riveArtboard as string | undefined}
                   stateMachine={riveLayer.riveStateMachine as string | undefined}
-                  fit={(riveLayer.riveFit as Parameters<typeof RiveBackground>[0]['fit']) ?? 'cover'}
+                  fit={
+                    (riveLayer.riveFit as Parameters<typeof RiveBackground>[0]['fit']) ?? 'cover'
+                  }
                   alignment={
-                    (riveLayer.riveAlignment as Parameters<typeof RiveBackground>[0]['alignment']) ??
-                    'center'
+                    (riveLayer.riveAlignment as Parameters<
+                      typeof RiveBackground
+                    >[0]['alignment']) ?? 'center'
                   }
                   opacity={riveLayer.opacity as number | undefined}
                   blendMode={riveLayer.blendMode as string | undefined}
@@ -616,7 +619,10 @@ export function PageBlocks({
                     riveLayer.riveScrubEnabled
                       ? {
                           inputName: riveLayer.riveScrubProperty as string,
-                          inputType: riveLayer.riveScrubInputType as 'number' | 'boolean' | undefined,
+                          inputType: riveLayer.riveScrubInputType as
+                            | 'number'
+                            | 'boolean'
+                            | undefined,
                           valueMin: riveLayer.riveScrubMin as number | undefined,
                           valueMax: riveLayer.riveScrubMax as number | undefined,
                           scrollStart: riveLayer.riveScrubStart as string | undefined,
