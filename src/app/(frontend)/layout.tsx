@@ -101,9 +101,12 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-    apple: '/favicon.ico',
+    // ?v=3 cache-busts the favicon: browsers and the Cloudflare edge cache
+    // favicons very aggressively, so a new URL forces every client to re-fetch
+    // (clients that cached the old 404 would otherwise keep showing no icon).
+    icon: [{ url: '/favicon.ico?v=3', sizes: 'any' }],
+    shortcut: '/favicon.ico?v=3',
+    apple: '/favicon.ico?v=3',
   },
   openGraph: {
     title: 'Digital Services Agency | Kagency',
