@@ -189,7 +189,7 @@ export function ServicesShowcase({
 
       {/* Main layout */}
       <div
-        className={`relative z-10 flex flex-col lg:flex-row w-full h-full items-center ${pxClass[paddingX]} pt-6 pb-4 lg:pt-0 lg:pb-0 gap-6 lg:gap-16`}
+        className={`relative z-10 flex flex-col lg:flex-row w-full h-full items-center ${pxClass[paddingX]} pt-6 pb-4 lg:pt-0 lg:pb-0 gap-10 lg:gap-28`}
       >
         {/* ── Left: text panels ── */}
         <div className="relative h-[38%] lg:h-auto flex-1 lg:max-w-[45%] self-stretch">

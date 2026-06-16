@@ -67,23 +67,67 @@ const vt323 = VT323({
   weight: '400',
 })
 
+const SITE_NAME = 'Kagency'
+const SITE_DESCRIPTION =
+  'Kagency is a digital services agency delivering brand strategy, UI/UX design, design systems, web development, and growth marketing — building high-performance websites and digital products that convert.'
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
   title: {
-    default: 'Kagency | Creative Agency Portfolio',
+    default: 'Digital Services Agency | Kagency',
     template: '%s | Kagency',
   },
-  description:
-    'Kagency is a bold digital agency portfolio focused on strategy, branding, design systems, and high-performance web experiences.',
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  keywords: [
+    'digital services agency',
+    'digital agency',
+    'creative agency',
+    'web design agency',
+    'web development',
+    'branding',
+    'brand strategy',
+    'UI/UX design',
+    'design systems',
+    'growth marketing',
+    'SEO',
+    'product design',
+    'Kagency',
+  ],
+  authors: [{ name: SITE_NAME }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
+  alternates: {
+    canonical: '/',
+  },
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
+  },
   openGraph: {
-    title: 'Kagency | Creative Agency Portfolio',
-    description: 'Strategy, design, development, and growth services from a modern agency studio.',
+    title: 'Digital Services Agency | Kagency',
+    description: SITE_DESCRIPTION,
     type: 'website',
+    siteName: SITE_NAME,
+    locale: 'en_US',
+    url: '/',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Kagency | Creative Agency Portfolio',
-    description: 'Strategy, design, development, and growth services from a modern agency studio.',
+    title: 'Digital Services Agency | Kagency',
+    description: SITE_DESCRIPTION,
+    creator: '@kagency',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
 }
 

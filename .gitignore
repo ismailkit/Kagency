@@ -50,6 +50,10 @@ node_modules/
 
 # Local DB snapshots
 backups/
+kagency-snapshot.archive.gz
+
+# Production secrets (lives only on the server)
+.env.production
 #AI
 .agents/
 .github/

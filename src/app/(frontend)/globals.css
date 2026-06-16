@@ -56,13 +56,37 @@ html {
   }
 }
 
+/* Large desktops: keep extending the rem scale so the (rem-based) layout grows
+   with the viewport instead of stranding everything at the 1024px size. This is
+   what keeps wide screens from looking small/cramped. */
+@media (min-width: 1440px) {
+  html {
+    font-size: 17px;
+  }
+}
+
+@media (min-width: 1920px) {
+  html {
+    font-size: 18px;
+  }
+}
+
+@media (min-width: 2560px) {
+  html {
+    font-size: 20px;
+  }
+}
+
 body {
   font-family: var(--font-sans);
   background-size: auto, auto;
 }
 
 .site-shell {
-  width: min(96%, 1440px);
+  /* Cap is in rem so it scales together with the root font-size ramp above:
+     ~1440px @16px (≤laptop, unchanged), ~1620px @18px (1920), ~1800px @20px (2560+).
+     The 96% floor keeps comfortable gutters on every smaller screen. */
+  width: min(96%, 90rem);
   margin-inline: auto;
 }
 
