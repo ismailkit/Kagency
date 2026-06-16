@@ -46,7 +46,9 @@ function normaliseBgs(raw: BackgroundLayer[] | undefined): BackgroundLayer[] | u
   if (!raw?.length) return undefined
   return raw.map((layer) => {
     if (layer.type === 'image') {
-      const resolved = mediaURL(layer.image) ?? (layer.url as string | undefined) ?? ''
+      const raw = layer as unknown as Record<string, unknown>
+      const fileUrl = mediaURL(raw.image as Parameters<typeof mediaURL>[0])
+      const resolved = fileUrl ?? (layer.url as string | undefined) ?? ''
       return { ...layer, url: resolved } as BackgroundLayer
     }
     if (layer.type === 'gradient') {
