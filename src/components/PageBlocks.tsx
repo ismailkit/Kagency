@@ -19,6 +19,7 @@ import { ServicesGrid } from '@/components/ServicesGrid'
 import { TestimonialsBlock } from '@/components/TestimonialsBlock'
 import type { BackgroundLayer } from '@/components/SectionBlock'
 import type {
+  BackgroundLayer as CMSBackgroundLayer,
   CMSContentBlock,
   CMSPageSettings,
   CMSProject,
@@ -42,7 +43,7 @@ function applyLimit<T>(items: T[], limit?: number) {
   return items.slice(0, limit)
 }
 
-function normaliseBgs(raw: BackgroundLayer[] | undefined): BackgroundLayer[] | undefined {
+function normaliseBgs(raw: CMSBackgroundLayer[] | undefined): BackgroundLayer[] | undefined {
   if (!raw?.length) return undefined
   return raw.map((layer) => {
     if (layer.type === 'image') {
@@ -708,7 +709,7 @@ export function PageBlocks({
               wrap={section.flexWrap}
               minHeightMobile={section.minHeightMobile}
               minHeightDesktop={section.minHeightDesktop}
-              className={sectionIsDark(normaliseBgs(section.backgrounds)) ? 'text-white' : ''}
+              className={sectionIsDark(normaliseBgs(section.backgrounds) ?? []) ? 'text-white' : ''}
             >
               {innerBlocks.map((b, bi) => (
                 <BlockContent

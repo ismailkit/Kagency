@@ -358,6 +358,26 @@ export type CMSContentBlock =
       slotAnimDuration?: number
       slotAnimDelay?: number
     }
+  | {
+      id?: string
+      blockType: 'scrollBeliefs'
+      beliefs?: Array<{ number: string; title: string; body: string }>
+      vhPerBelief?: number
+      scrub?: number
+      backgroundSvg?: string
+      titleSize?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | null
+      bodySize?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | null
+    }
+  | {
+      id?: string
+      blockType: 'beliefsCounter'
+      beliefs?: Array<{ number: string; title: string; body: string }>
+    }
+  | {
+      id?: string
+      blockType: 'aboutPillars'
+      pillars?: Array<{ label: string; descriptor: string; body: string }>
+    }
   | ({
       id?: string
       blockType: 'ksun'
@@ -494,6 +514,10 @@ export type CMSSection = {
   containerStyle?: 'normal' | 'center' | 'top' | 'bottom' | 'scroll-jack'
   scrollJackHeight?: number
   scrollJackScrub?: number
+  entranceAnim?: boolean
+  entranceType?: AnimType
+  entranceEasing?: AnimEasing
+  entranceDuration?: number
   paddingTop?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
   paddingBottom?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
   paddingX?: 'none' | 'sm' | 'md' | 'lg' | 'xl'

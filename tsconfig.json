@@ -44,6 +44,14 @@
     "node_modules",
     "tests",
     "vitest.config.mts",
-    "playwright.config.ts"
+    "playwright.config.ts",
+    "src/seed.ts",
+    "src/seed-about.ts",
+    "src/seed-contact.ts",
+    "src/seed-legal.ts",
+    "src/seed-services.ts",
+    "src/seed-testimonials.ts",
+    "src/seed-the-agency.ts",
+    "src/migrate-richtext.ts"
   ]
 }
