@@ -4,7 +4,9 @@ import Script from 'next/script'
 import './globals.css'
 
 const GTM_ID = 'GTM-PX7LRCMB'
+const GA_ID = 'G-15V660E572'
 
+import { CookieConsent } from '@/components/CookieConsent'
 import { Footer } from '@/components/Footer'
 import { Header } from '@/components/Header'
 import { PageSettingsProvider } from '@/components/PageSettingsContext'
@@ -145,6 +147,14 @@ export default function RootLayout({
       className={`${oswald.variable} ${leagueSpartan.variable} ${caveat.variable} ${vt323.variable}`}
       suppressHydrationWarning
     >
+      {/* Google Consent Mode v2 — default everything to "denied" BEFORE any Google
+          tag loads, then re-apply the visitor's stored choice. The CookieConsent
+          banner flips these to "granted" on opt-in. */}
+      <Script id="consent-default" strategy="beforeInteractive">
+        {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
+gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',functionality_storage:'granted',security_storage:'granted',wait_for_update:500});
+try{var s=localStorage.getItem('kagency_consent');if(s){gtag('consent','update',JSON.parse(s).gcm);}}catch(e){}`}
+      </Script>
       {/* Google Tag Manager — loaded early via next/script (equivalent to the head snippet) */}
       <Script id="gtm-base" strategy="afterInteractive">
         {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -152,6 +162,17 @@ new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
 })(window,document,'script','dataLayer','${GTM_ID}');`}
+      </Script>
+      {/* Google tag (gtag.js) — GA4. gtag() is defined by the consent-default script above. */}
+      <Script
+        id="ga4-src"
+        src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+        strategy="afterInteractive"
+        async
+      />
+      <Script id="ga4-config" strategy="afterInteractive">
+        {`gtag('js', new Date());
+gtag('config','${GA_ID}');`}
       </Script>
       <body className="min-h-screen text-kblack-500 antialiased">
         {/* Google Tag Manager (noscript) — immediately after opening body */}
@@ -168,6 +189,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           <main className="flex-1 overflow-hidden">{children}</main>
           <Footer />
         </PageSettingsProvider>
+        <CookieConsent />
       </body>
     </html>
   )
