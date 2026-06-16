@@ -1,7 +1,10 @@
 import type { Metadata } from 'next'
 import { League_Spartan, VT323 } from 'next/font/google'
 import localFont from 'next/font/local'
+import Script from 'next/script'
 import './globals.css'
+
+const GTM_ID = 'GTM-PX7LRCMB'
 
 import { Footer } from '@/components/Footer'
 import { Header } from '@/components/Header'
@@ -145,7 +148,24 @@ export default function RootLayout({
       className={`${prequel.variable} ${leagueSpartan.variable} ${pcd.variable} ${vt323.variable}`}
       suppressHydrationWarning
     >
+      {/* Google Tag Manager — loaded early via next/script (equivalent to the head snippet) */}
+      <Script id="gtm-base" strategy="afterInteractive">
+        {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','${GTM_ID}');`}
+      </Script>
       <body className="min-h-screen text-kblack-500 antialiased">
+        {/* Google Tag Manager (noscript) — immediately after opening body */}
+        <noscript>
+          <iframe
+            src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+            height="0"
+            width="0"
+            style={{ display: 'none', visibility: 'hidden' }}
+          />
+        </noscript>
         <PageSettingsProvider>
           <Header />
           <main className="flex-1 overflow-hidden">{children}</main>
