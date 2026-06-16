@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
-import { League_Spartan, VT323 } from 'next/font/google'
-import localFont from 'next/font/local'
+import { Caveat, League_Spartan, Oswald, VT323 } from 'next/font/google'
 import Script from 'next/script'
 import './globals.css'
 
@@ -10,53 +9,51 @@ import { Footer } from '@/components/Footer'
 import { Header } from '@/components/Header'
 import { PageSettingsProvider } from '@/components/PageSettingsContext'
 
-const prequel = localFont({
+/*
+ * ⚠ TEMPORARY FONT SUBSTITUTION — font licensing in progress.
+ * Prequel (display/heading) and PCD (handwritten accent) are proprietary LOCAL
+ * faces. Until licensing clears we route their CSS variables to visually-similar
+ * Google Fonts: Oswald ≈ Prequel's condensed uppercase display; Caveat ≈ PCD's
+ * handwriting. League Spartan (body) and VT323 (pixel accent) are already
+ * Google/OFL fonts, so they are unchanged.
+ *
+ * TO REVERT once licensed: restore the `localFont` import, un-comment the two
+ * blocks below, delete the Oswald/Caveat consts, and put `prequel.variable` /
+ * `pcd.variable` back into the <html> className. The Prequel/PCD font files are
+ * kept in ./assets/fonts — nothing was removed.
+ *
+ * import localFont from 'next/font/local'
+ * const prequel = localFont({
+ *   variable: '--font-display',
+ *   src: [
+ *     { path: './assets/fonts/Prequel-Regular.woff2',    weight: '400', style: 'normal' },
+ *     { path: './assets/fonts/Prequel-Regular.woff',     weight: '400', style: 'normal' },
+ *     { path: './assets/fonts/Prequel-bold.woff2',       weight: '700', style: 'normal' },
+ *     { path: './assets/fonts/Prequel-bold.woff',        weight: '700', style: 'normal' },
+ *     { path: './assets/fonts/Prequel-bolditalic.woff2', weight: '700', style: 'italic' },
+ *     { path: './assets/fonts/Prequel-bolditalic.woff',  weight: '700', style: 'italic' },
+ *   ],
+ *   display: 'swap',
+ * })
+ * const pcd = localFont({
+ *   variable: '--font-handwritten',
+ *   src: [{ path: './assets/fonts/PCD.woff2', weight: '400', style: 'normal' }],
+ *   display: 'swap',
+ * })
+ */
+
+// Temporary Google substitute for Prequel (condensed uppercase display).
+const oswald = Oswald({
   variable: '--font-display',
-  src: [
-    {
-      path: './assets/fonts/Prequel-Regular.woff2',
-      weight: '400',
-      style: 'normal',
-    },
-    {
-      path: './assets/fonts/Prequel-Regular.woff',
-      weight: '400',
-      style: 'normal',
-    },
-    {
-      path: './assets/fonts/Prequel-bold.woff2',
-      weight: '700',
-      style: 'normal',
-    },
-    {
-      path: './assets/fonts/Prequel-bold.woff',
-      weight: '700',
-      style: 'normal',
-    },
-    {
-      path: './assets/fonts/Prequel-bolditalic.woff2',
-      weight: '700',
-      style: 'italic',
-    },
-    {
-      path: './assets/fonts/Prequel-bolditalic.woff',
-      weight: '700',
-      style: 'italic',
-    },
-  ],
-  display: 'swap',
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
 })
 
-const pcd = localFont({
+// Temporary Google substitute for PCD (handwritten accent).
+const caveat = Caveat({
   variable: '--font-handwritten',
-  src: [
-    {
-      path: './assets/fonts/PCD.woff2',
-      weight: '400',
-      style: 'normal',
-    },
-  ],
-  display: 'swap',
+  subsets: ['latin'],
+  weight: ['400', '700'],
 })
 
 const leagueSpartan = League_Spartan({
@@ -145,7 +142,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${prequel.variable} ${leagueSpartan.variable} ${pcd.variable} ${vt323.variable}`}
+      className={`${oswald.variable} ${leagueSpartan.variable} ${caveat.variable} ${vt323.variable}`}
       suppressHydrationWarning
     >
       {/* Google Tag Manager — loaded early via next/script (equivalent to the head snippet) */}
