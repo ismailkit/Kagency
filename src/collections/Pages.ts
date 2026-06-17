@@ -869,6 +869,8 @@ const backgroundsField = {
           label: 'State machine name',
 
           admin: {
+            description:
+              'Required to play a state machine and to drive a state machine input from scroll. Leave blank if your file animates purely via data binding (ViewModel).',
             condition: (_: unknown, siblingData: { type?: string }) => siblingData?.type === 'rive',
           },
         },
@@ -952,10 +954,11 @@ const backgroundsField = {
 
       type: 'text' as const,
 
-      label: 'Rive input name',
+      label: 'Rive input / data property name',
 
       admin: {
-        description: 'Name of the Number or Boolean state machine input to scrub.',
+        description:
+          'Name of the Number/Boolean to drive from scroll — either a state machine input OR a data-binding (ViewModel) property. Both are tried, so it works whichever way your .riv was built.',
 
         condition: (_: unknown, siblingData: { type?: string; riveScrubEnabled?: boolean }) =>
           siblingData?.type === 'rive' && !!siblingData?.riveScrubEnabled,

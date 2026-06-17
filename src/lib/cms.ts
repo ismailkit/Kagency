@@ -1,3 +1,5 @@
+import type { RichTextContent } from './richtext'
+
 const PUBLIC_CMS_URL = process.env.NEXT_PUBLIC_CMS_URL || 'http://localhost:3000'
 const CMS_URL = process.env.CMS_INTERNAL_URL || PUBLIC_CMS_URL
 
@@ -548,6 +550,17 @@ export type CMSService = {
   featured?: boolean
 }
 
+export type CMSProjectGalleryItem = {
+  image?: CMSMedia | string
+  caption?: string
+}
+
+export type CMSSeoMeta = {
+  title?: string
+  description?: string
+  image?: CMSMedia | string
+}
+
 export type CMSProject = {
   id: string
   title: string
@@ -557,6 +570,15 @@ export type CMSProject = {
   summary: string
   featured?: boolean
   coverImage?: CMSMedia | string
+  // Case-study single-page fields
+  role?: string
+  timeline?: string
+  projectUrl?: string
+  content?: RichTextContent
+  gallery?: CMSProjectGalleryItem[]
+  services?: (CMSService | string)[]
+  publishedAt?: string
+  meta?: CMSSeoMeta
 }
 
 type DocsResponse<T> = {
@@ -601,6 +623,25 @@ export async function getProjects({
   })
 
   return data?.docs ?? []
+}
+
+/** Fetch a single project (case study) by its slug. */
+export async function getProject(slug: string) {
+  const data = await cmsFetch<DocsResponse<CMSProject>>('/api/projects', {
+    'where[slug][equals]': slug,
+    depth: 2,
+    limit: 1,
+  })
+  return data?.docs?.[0] ?? null
+}
+
+/** All project slugs — used to statically pre-render the case-study routes. */
+export async function getAllProjectSlugs(): Promise<string[]> {
+  const data = await cmsFetch<DocsResponse<{ slug?: string }>>('/api/projects', {
+    depth: 0,
+    limit: 500,
+  })
+  return (data?.docs ?? []).map((d) => d.slug).filter((s): s is string => Boolean(s))
 }
 
 /** Fetch projects for multiple categories in one round-trip each, returns a map. */

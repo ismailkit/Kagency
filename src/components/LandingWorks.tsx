@@ -1,7 +1,8 @@
 'use client'
 
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { useEffect, useState, type ReactNode } from 'react'
 
 import { mediaURL } from '@/lib/cms'
 import type { CMSProject } from '@/lib/cms'
@@ -117,6 +118,21 @@ type PosterCardProps = {
 
 const CYCLE_INTERVAL = 7000
 
+// Wraps the poster frame in a link to the current project's case study.
+// Falls back to a plain wrapper when there is no project to link to.
+function PosterFrameLink({ slug, title, children }: { slug?: string; title?: string; children: ReactNode }) {
+  if (!slug) return <div className="block w-full">{children}</div>
+  return (
+    <Link
+      href={`/projects/${slug}`}
+      aria-label={title ? `View ${title} case study` : 'View case study'}
+      className="group/poster block w-full"
+    >
+      {children}
+    </Link>
+  )
+}
+
 function PosterCard({ column, projects, delay = 0 }: PosterCardProps) {
   const [index, setIndex] = useState(0)
   const [visible, setVisible] = useState(true)
@@ -157,13 +173,14 @@ function PosterCard({ column, projects, delay = 0 }: PosterCardProps) {
         </div>
       </div>
 
-      {/* Poster card — outer frame */}
-      <div
-        className="relative w-full border-[3px] border-white rounded-sm p-2"
-        style={{ aspectRatio: '2/3' }}
-      >
-        {/* Inner image area — overlays are clipped here, not on the frame */}
-        <div className="relative w-full h-full overflow-hidden rounded-sm">
+      {/* Poster card — outer frame (links to the project case study) */}
+      <PosterFrameLink slug={current?.slug} title={current?.title}>
+        <div
+          className="relative w-full border-[3px] border-white rounded-sm p-2 transition-colors duration-300 group-hover/poster:border-kred-500"
+          style={{ aspectRatio: '2/3' }}
+        >
+          {/* Inner image area — overlays are clipped here, not on the frame */}
+          <div className="relative w-full h-full overflow-hidden rounded-sm">
           {/* Category label tab */}
           <div className="absolute top-2 left-2 z-20 bg-kred-500 px-2 py-0.5">
             <span className="font-display text-xs font-bold uppercase tracking-widest text-white">
@@ -206,8 +223,9 @@ function PosterCard({ column, projects, delay = 0 }: PosterCardProps) {
               <span className="font-display text-sm uppercase">No projects</span>
             </div>
           )}
+          </div>
         </div>
-      </div>
+      </PosterFrameLink>
 
       {/* Handwritten caption */}
       {(column.cardTitle || column.cardSubtitle) && (

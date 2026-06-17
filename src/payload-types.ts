@@ -292,6 +292,9 @@ export interface Page {
            * Leave blank for the file's default artboard.
            */
           riveArtboard?: string | null;
+          /**
+           * Required to play a state machine and to drive a state machine input from scroll. Leave blank if your file animates purely via data binding (ViewModel).
+           */
           riveStateMachine?: string | null;
           riveFit?: ('cover' | 'contain' | 'fill' | 'fitWidth' | 'fitHeight' | 'scaleDown' | 'none') | null;
           riveAlignment?:
@@ -309,7 +312,7 @@ export interface Page {
             | null;
           riveScrubEnabled?: boolean | null;
           /**
-           * Name of the Number or Boolean state machine input to scrub.
+           * Name of the Number/Boolean to drive from scroll — either a state machine input OR a data-binding (ViewModel) property. Both are tried, so it works whichever way your .riv was built.
            */
           riveScrubProperty?: string | null;
           riveScrubInputType?: ('number' | 'boolean') | null;
@@ -444,6 +447,9 @@ export interface Page {
            * Leave blank for the file's default artboard.
            */
           riveArtboard?: string | null;
+          /**
+           * Required to play a state machine and to drive a state machine input from scroll. Leave blank if your file animates purely via data binding (ViewModel).
+           */
           riveStateMachine?: string | null;
           riveFit?: ('cover' | 'contain' | 'fill' | 'fitWidth' | 'fitHeight' | 'scaleDown' | 'none') | null;
           riveAlignment?:
@@ -461,7 +467,7 @@ export interface Page {
             | null;
           riveScrubEnabled?: boolean | null;
           /**
-           * Name of the Number or Boolean state machine input to scrub.
+           * Name of the Number/Boolean to drive from scroll — either a state machine input OR a data-binding (ViewModel) property. Both are tried, so it works whichever way your .riv was built.
            */
           riveScrubProperty?: string | null;
           riveScrubInputType?: ('number' | 'boolean') | null;
@@ -1687,23 +1693,71 @@ export interface Service {
 export interface Project {
   id: string;
   title: string;
+  /**
+   * URL path: /projects/<slug>. Auto-filled from the title if left blank.
+   */
   slug: string;
   client: string;
   /**
    * Used to group projects in the Works showcase grid.
    */
   category: 'design' | 'development' | 'brand' | 'strategy' | 'other';
+  /**
+   * One or two lines shown on cards and used as the default meta description.
+   */
   summary: string;
+  /**
+   * Hero / card image. Also used as the default social (OG) image.
+   */
   coverImage?: (string | null) | Media;
+  /**
+   * e.g. Brand strategy · Web design & build
+   */
+  role?: string | null;
+  /**
+   * e.g. 2026 · 6 weeks
+   */
+  timeline?: string | null;
+  /**
+   * https://…
+   */
+  projectUrl?: string | null;
+  /**
+   * Full case-study write-up: the challenge, approach, and results. Headings, lists, quotes and links are supported.
+   */
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   gallery?:
     | {
         image: string | Media;
+        caption?: string | null;
         id?: string | null;
       }[]
     | null;
   services?: (string | Service)[] | null;
   featured?: boolean | null;
   publishedAt?: string | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (string | null) | Media;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -2475,15 +2529,27 @@ export interface ProjectsSelect<T extends boolean = true> {
   category?: T;
   summary?: T;
   coverImage?: T;
+  role?: T;
+  timeline?: T;
+  projectUrl?: T;
+  content?: T;
   gallery?:
     | T
     | {
         image?: T;
+        caption?: T;
         id?: T;
       };
   services?: T;
   featured?: T;
   publishedAt?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

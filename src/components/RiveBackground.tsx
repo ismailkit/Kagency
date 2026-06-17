@@ -32,7 +32,12 @@ export type RiveBgAlignment =
   | 'bottomRight'
 
 export interface RiveBgScrollScrub {
-  /** Name of the Number (or Boolean) input on the active state machine. */
+  /**
+   * Name of the value to drive from scroll. This is resolved against BOTH:
+   *  - a data-binding (ViewModel) Number/Boolean property (Rive's "data" workflow), and
+   *  - a classic state machine Number/Boolean input,
+   * so it works whichever way the .riv was authored.
+   */
   inputName: string
   /** Input type — number (default) or boolean (driven by threshold at 50% progress). */
   inputType?: 'number' | 'boolean'
@@ -65,6 +70,12 @@ export interface RiveBackgroundProps {
   blendMode?: string
   /** Scroll-driven Rive input scrub config. */
   scrub?: RiveBgScrollScrub
+}
+
+// Minimal shape of Rive's data-binding (ViewModel) instance imperative API.
+interface ViewModelLike {
+  number?: (path: string) => { value: number } | null
+  boolean?: (path: string) => { value: boolean } | null
 }
 
 // ─── Maps ─────────────────────────────────────────────────────────────────────
@@ -121,6 +132,9 @@ export function RiveBackground({
     artboard: artboard || undefined,
     stateMachines: stateMachine ? [stateMachine] : undefined,
     autoplay: true,
+    // Bind the artboard's default ViewModel instance so scroll-scrub can drive
+    // data-binding (ViewModel) properties, not only state machine inputs.
+    autoBind: true,
     layout: new Layout({
       fit: FIT_MAP[fit] ?? Fit.Cover,
       alignment: ALIGN_MAP[alignment] ?? Alignment.Center,
@@ -149,14 +163,16 @@ export function RiveBackground({
     return () => obs.disconnect()
   }, [rive, stateMachine])
 
-  // ── Scroll scrub — drive a Rive state machine input from scroll ─────────
+  // ── Scroll scrub — drive a Rive value from scroll ───────────────────────
+  // Works with data-binding (ViewModel) properties AND state machine inputs, so
+  // it no longer requires a state machine to be set (data binding can stand alone).
   useEffect(() => {
-    if (!rive || !scrub?.inputName || !stateMachine || !containerRef.current) return
+    if (!rive || !scrub?.inputName || !containerRef.current) return
 
     // Lazily get the parent section element as the scroll trigger target.
-    // Walk up from our absolute-positioned container to the first
-    // relatively-positioned section ancestor.
+    // Walk up from our absolute-positioned container to the framed section block.
     const section =
+      containerRef.current.closest('.section-block') ??
       containerRef.current.closest('section') ??
       containerRef.current.parentElement ??
       containerRef.current
@@ -182,21 +198,34 @@ export function RiveBackground({
       onUpdate: (self) => {
         // Remap scroll progress (0–1) to the configured value range
         const rawValue = valueMin + (valueMax - valueMin) * self.progress
+        const asBool = rawValue >= (valueMin + valueMax) / 2
 
+        // 1) Data binding (ViewModel) property — Rive's modern "data" workflow.
         try {
-          const inputs = rive.stateMachineInputs(stateMachine)
-          if (!inputs) return
-          const input = inputs.find((i) => i.name === inputName)
-          if (!input) return
-
-          if (inputType === 'boolean') {
-            // Treat progress >= 0.5 as true
-            input.value = rawValue >= (valueMin + valueMax) / 2
-          } else {
-            input.value = rawValue
+          const vmi = (rive as unknown as { viewModelInstance?: ViewModelLike | null })
+            .viewModelInstance
+          if (vmi) {
+            if (inputType === 'boolean') {
+              const prop = vmi.boolean?.(inputName)
+              if (prop) prop.value = asBool
+            } else {
+              const prop = vmi.number?.(inputName)
+              if (prop) prop.value = rawValue
+            }
           }
         } catch {
-          // Rive may not be ready yet — ScrollTrigger will retry on next tick
+          // not data-bound or instance not ready yet — ScrollTrigger retries next tick
+        }
+
+        // 2) Classic state machine input — legacy / non-data-bound files.
+        if (stateMachine) {
+          try {
+            const inputs = rive.stateMachineInputs(stateMachine)
+            const input = inputs?.find((i) => i.name === inputName)
+            if (input) input.value = inputType === 'boolean' ? asBool : rawValue
+          } catch {
+            // state machine not ready yet
+          }
         }
       },
     })

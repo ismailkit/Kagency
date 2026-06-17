@@ -1,4 +1,6 @@
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
+import { seoPlugin } from '@payloadcms/plugin-seo'
+import type { GenerateTitle, GenerateDescription, GenerateURL } from '@payloadcms/plugin-seo/types'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
@@ -19,6 +21,13 @@ const dirname = path.dirname(filename)
 
 const cmsURL = process.env.NEXT_PUBLIC_CMS_URL || 'http://localhost:3000'
 const webURL = process.env.WEB_URL || 'http://localhost:3000'
+const siteURL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kagency.dev'
+
+// ── SEO plugin generators (used for the auto-fill buttons + previews) ────────
+const generateTitle: GenerateTitle = ({ doc }) =>
+  doc?.title ? `${doc.title} | Kagency` : 'Kagency'
+const generateDescription: GenerateDescription = ({ doc }) => doc?.summary ?? ''
+const generateURL: GenerateURL = ({ doc }) => `${siteURL}/projects/${doc?.slug ?? ''}`
 const allowedOrigins = Array.from(
   new Set([
     cmsURL,
@@ -54,5 +63,14 @@ export default buildConfig({
   cors: allowedOrigins,
   csrf: allowedOrigins,
   sharp,
-  plugins: [],
+  plugins: [
+    seoPlugin({
+      collections: ['projects'],
+      uploadsCollection: 'media',
+      tabbedUI: true,
+      generateTitle,
+      generateDescription,
+      generateURL,
+    }),
+  ],
 })

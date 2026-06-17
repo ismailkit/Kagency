@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import Link from 'next/link'
 
 import type { CMSProject } from '@/lib/cms'
 import { mediaURL } from '@/lib/cms'
@@ -69,27 +70,35 @@ export function ProjectsGrid({
                 duration={itemsAnimDuration}
                 delay={(itemsAnimDelay ?? 0) + i * itemsAnimStagger}
                 as="li"
-                className="list-none overflow-hidden rounded-2xl border-[3px] border-kblack-500"
+                className="list-none"
               >
-                {image ? (
-                  <Image
-                    src={image}
-                    alt={project.title}
-                    width={960}
-                    height={480}
-                    className="h-72 w-full object-cover"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="h-72 w-full bg-kblack-100" />
-                )}
-                <div className="p-6">
-                  <p className="font-display text-sm uppercase tracking-wide text-kred-500">
-                    {project.client}
-                  </p>
-                  <h3 className="mt-2 font-display text-3xl uppercase">{project.title}</h3>
-                  <p className="mt-3 font-sans text-lg text-kblack-500">{project.summary}</p>
-                </div>
+                <Link
+                  href={`/projects/${project.slug}`}
+                  className="group block overflow-hidden rounded-2xl border-[3px] border-kblack-500 transition-colors hover:border-kred-500"
+                >
+                  {image ? (
+                    <Image
+                      src={image}
+                      alt={project.title}
+                      width={960}
+                      height={480}
+                      className="h-72 w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="h-72 w-full bg-kblack-100" />
+                  )}
+                  <div className="p-6">
+                    <p className="font-display text-sm uppercase tracking-wide text-kred-500">
+                      {project.client}
+                    </p>
+                    <h3 className="mt-2 font-display text-3xl uppercase">{project.title}</h3>
+                    <p className="mt-3 font-sans text-lg text-kblack-500">{project.summary}</p>
+                    <span className="mt-4 inline-block font-sans text-sm font-bold uppercase tracking-wide text-kred-500 opacity-0 transition-opacity group-hover:opacity-100">
+                      View case study →
+                    </span>
+                  </div>
+                </Link>
               </ScrollAnimate>
             )
           })}
