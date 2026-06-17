@@ -101,6 +101,15 @@ body {
   z-index: 0;
 }
 
+/* Rive (or other) layer painted ABOVE the section content. Clicks pass through. */
+.section-overlay-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 3;
+}
+
 /* Per-section noise (added via SectionBlock noise prop) */
 .section-block.is-noise::before,
 .section-block.is-noise--gradient::before {

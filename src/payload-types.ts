@@ -310,6 +310,10 @@ export interface Page {
                 | 'bottomRight'
               )
             | null;
+          /**
+           * Background sits behind the section content. Overlay paints the animation on top of the content (clicks still pass through).
+           */
+          riveLayerPosition?: ('background' | 'overlay') | null;
           riveScrubEnabled?: boolean | null;
           /**
            * Name of the Number/Boolean to drive from scroll — either a state machine input OR a data-binding (ViewModel) property. Both are tried, so it works whichever way your .riv was built.
@@ -465,6 +469,10 @@ export interface Page {
                 | 'bottomRight'
               )
             | null;
+          /**
+           * Background sits behind the section content. Overlay paints the animation on top of the content (clicks still pass through).
+           */
+          riveLayerPosition?: ('background' | 'overlay') | null;
           riveScrubEnabled?: boolean | null;
           /**
            * Name of the Number/Boolean to drive from scroll — either a state machine input OR a data-binding (ViewModel) property. Both are tried, so it works whichever way your .riv was built.
@@ -2012,6 +2020,7 @@ export interface PagesSelect<T extends boolean = true> {
               riveStateMachine?: T;
               riveFit?: T;
               riveAlignment?: T;
+              riveLayerPosition?: T;
               riveScrubEnabled?: T;
               riveScrubProperty?: T;
               riveScrubInputType?: T;
@@ -2070,6 +2079,7 @@ export interface PagesSelect<T extends boolean = true> {
                     riveStateMachine?: T;
                     riveFit?: T;
                     riveAlignment?: T;
+                    riveLayerPosition?: T;
                     riveScrubEnabled?: T;
                     riveScrubProperty?: T;
                     riveScrubInputType?: T;

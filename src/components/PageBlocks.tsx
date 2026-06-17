@@ -598,11 +598,14 @@ export function PageBlocks({
             const riveLayer = layer as unknown as Record<string, unknown>
             const riveSrc = (riveLayer.riveUrl as string | undefined) ?? ''
             if (!riveSrc) return null
+            const isOverlay = riveLayer.riveLayerPosition === 'overlay'
             return (
               <div
                 key={i}
                 aria-hidden="true"
-                className="fixed inset-0 -z-10 pointer-events-none overflow-hidden"
+                className={`fixed inset-0 pointer-events-none overflow-hidden ${
+                  isOverlay ? 'z-30' : '-z-10'
+                }`}
               >
                 <RiveBackground
                   src={riveSrc}

@@ -26,6 +26,8 @@ type Props = {
   children: ReactNode
   /** Background elements rendered behind content (not translated) */
   bgSlot?: ReactNode
+  /** Overlay elements rendered above content (not translated, clicks pass through) */
+  overlaySlot?: ReactNode
   /**
    * Fallback scroll-capture distance in vh when content fits in one screen.
    * Default 200.
@@ -44,6 +46,7 @@ const CARD_RING = 0.12 // rgba alpha for inset ring border
 export function ScrollJackShell({
   children,
   bgSlot,
+  overlaySlot,
   extraScroll = 200,
   scrubDuration = 1.2,
   className = '',
@@ -166,6 +169,12 @@ export function ScrollJackShell({
       <div ref={contentRef} className="relative z-1" style={{ willChange: 'transform' }}>
         {children}
       </div>
+      {/* Overlay layers: above content, stay in place while content translates */}
+      {overlaySlot && (
+        <div className="pointer-events-none absolute inset-0 z-2" aria-hidden="true">
+          {overlaySlot}
+        </div>
+      )}
     </div>
   )
 }

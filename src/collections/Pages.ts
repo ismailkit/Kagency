@@ -933,6 +933,28 @@ const backgroundsField = {
       ],
     },
 
+    {
+      name: 'riveLayerPosition',
+
+      type: 'select' as const,
+
+      label: 'Layer placement',
+
+      defaultValue: 'background',
+
+      options: [
+        { label: 'Background (behind content)', value: 'background' },
+        { label: 'Overlay (above content)', value: 'overlay' },
+      ],
+
+      admin: {
+        description:
+          'Background sits behind the section content. Overlay paints the animation on top of the content (clicks still pass through).',
+
+        condition: (_: unknown, siblingData: { type?: string }) => siblingData?.type === 'rive',
+      },
+    },
+
     // ── Rive scroll scrub ────────────────────────────────────────────────
 
     {

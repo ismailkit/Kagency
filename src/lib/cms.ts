@@ -116,6 +116,7 @@ export type BackgroundLayer =
       riveScrubStart?: string
       riveScrubEnd?: string
       riveScrubStrength?: number
+      riveLayerPosition?: 'background' | 'overlay'
       opacity?: number
       blendMode?: string
     }

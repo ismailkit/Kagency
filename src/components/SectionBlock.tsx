@@ -82,9 +82,54 @@ export type BackgroundLayer =
       riveScrubStart?: string
       riveScrubEnd?: string
       riveScrubStrength?: number
+      /** 'background' (behind content, default) or 'overlay' (above content). */
+      riveLayerPosition?: 'background' | 'overlay'
       opacity?: number
       blendMode?: string
     }
+
+type RiveLayer = Extract<BackgroundLayer, { type: 'rive' }>
+
+/** Renders one Rive layer as either a background (z=0) or overlay (z=3) element. */
+function SectionRiveLayer({
+  layer,
+  placement,
+}: {
+  layer: RiveLayer
+  placement: 'background' | 'overlay'
+}) {
+  if (!layer.riveUrl) return null
+  return (
+    <div
+      aria-hidden="true"
+      className={placement === 'overlay' ? 'section-overlay-layer' : 'section-bg-layer'}
+      style={{ overflow: 'hidden' }}
+    >
+      <RiveBackground
+        src={layer.riveUrl}
+        artboard={layer.riveArtboard}
+        stateMachine={layer.riveStateMachine}
+        fit={layer.riveFit ?? 'cover'}
+        alignment={layer.riveAlignment ?? 'center'}
+        opacity={layer.opacity}
+        blendMode={layer.blendMode}
+        scrub={
+          layer.riveScrubEnabled && layer.riveScrubProperty
+            ? {
+                inputName: layer.riveScrubProperty,
+                inputType: layer.riveScrubInputType,
+                valueMin: layer.riveScrubMin,
+                valueMax: layer.riveScrubMax,
+                scrollStart: layer.riveScrubStart,
+                scrollEnd: layer.riveScrubEnd,
+                scrubStrength: layer.riveScrubStrength,
+              }
+            : undefined
+        }
+      />
+    </div>
+  )
+}
 
 export type NoiseType = 'solid' | 'gradient' | 'none' | boolean | null
 
@@ -291,8 +336,10 @@ export function SectionBlock({
     (l): l is Extract<BackgroundLayer, { type: 'video' }> => l.type === 'video',
   )
   const riveLayers = backgrounds.filter(
-    (l): l is Extract<BackgroundLayer, { type: 'rive' }> => l.type === 'rive',
+    (l): l is RiveLayer => l.type === 'rive',
   )
+  const riveBgLayers = riveLayers.filter((l) => (l.riveLayerPosition ?? 'background') !== 'overlay')
+  const riveOverlayLayers = riveLayers.filter((l) => l.riveLayerPosition === 'overlay')
 
   const contentEl = direction ? (
     <div
@@ -375,39 +422,9 @@ export function SectionBlock({
             />
           </div>
         ))}
-        {riveLayers.map((layer, i) =>
-          layer.riveUrl ? (
-            <div
-              key={`rive-${i}`}
-              aria-hidden="true"
-              className="section-bg-layer"
-              style={{ overflow: 'hidden' }}
-            >
-              <RiveBackground
-                src={layer.riveUrl}
-                artboard={layer.riveArtboard}
-                stateMachine={layer.riveStateMachine}
-                fit={layer.riveFit ?? 'cover'}
-                alignment={layer.riveAlignment ?? 'center'}
-                opacity={layer.opacity}
-                blendMode={layer.blendMode}
-                scrub={
-                  layer.riveScrubEnabled && layer.riveScrubProperty
-                    ? {
-                        inputName: layer.riveScrubProperty,
-                        inputType: layer.riveScrubInputType,
-                        valueMin: layer.riveScrubMin,
-                        valueMax: layer.riveScrubMax,
-                        scrollStart: layer.riveScrubStart,
-                        scrollEnd: layer.riveScrubEnd,
-                        scrubStrength: layer.riveScrubStrength,
-                      }
-                    : undefined
-                }
-              />
-            </div>
-          ) : null,
-        )}
+        {riveBgLayers.map((layer, i) => (
+          <SectionRiveLayer key={`rive-bg-${i}`} layer={layer} placement="background" />
+        ))}
         {noise && noise !== 'none' && (
           <div
             aria-hidden="true"
@@ -424,6 +441,15 @@ export function SectionBlock({
     return (
       <ScrollJackShell
         bgSlot={bgEl}
+        overlaySlot={
+          riveOverlayLayers.length ? (
+            <>
+              {riveOverlayLayers.map((layer, i) => (
+                <SectionRiveLayer key={`rive-ov-${i}`} layer={layer} placement="overlay" />
+              ))}
+            </>
+          ) : undefined
+        }
         extraScroll={scrollJackHeight}
         scrubDuration={scrollJackScrub}
         className={hasGradientBorder ? 'has-gradient-border' : ''}
@@ -512,40 +538,10 @@ export function SectionBlock({
           />
         </div>
       ))}
-      {/* Rive animation bg layers */}
-      {riveLayers.map((layer, i) =>
-        layer.riveUrl ? (
-          <div
-            key={`rive-${i}`}
-            aria-hidden="true"
-            className="section-bg-layer"
-            style={{ overflow: 'hidden' }}
-          >
-            <RiveBackground
-              src={layer.riveUrl}
-              artboard={layer.riveArtboard}
-              stateMachine={layer.riveStateMachine}
-              fit={layer.riveFit ?? 'cover'}
-              alignment={layer.riveAlignment ?? 'center'}
-              opacity={layer.opacity}
-              blendMode={layer.blendMode}
-              scrub={
-                layer.riveScrubEnabled && layer.riveScrubProperty
-                  ? {
-                      inputName: layer.riveScrubProperty,
-                      inputType: layer.riveScrubInputType,
-                      valueMin: layer.riveScrubMin,
-                      valueMax: layer.riveScrubMax,
-                      scrollStart: layer.riveScrubStart,
-                      scrollEnd: layer.riveScrubEnd,
-                      scrubStrength: layer.riveScrubStrength,
-                    }
-                  : undefined
-              }
-            />
-          </div>
-        ) : null,
-      )}
+      {/* Rive animation bg layers (behind content) */}
+      {riveBgLayers.map((layer, i) => (
+        <SectionRiveLayer key={`rive-bg-${i}`} layer={layer} placement="background" />
+      ))}
       {/* Section content — z-index: 1, always above all bg layers and noise */}
       <div
         className={`site-shell section-container ${styleClass(styleType)}${hasGradientBorder ? ' has-gradient-border' : ''} ${ptClass} ${pbClass} ${pxClass} ${mhMobileClass} ${mhDesktopClass}${mhMobileClass || mhDesktopClass ? ' flex flex-col justify-center' : ''} ${className}`.trim()}
@@ -563,6 +559,10 @@ export function SectionBlock({
           {contentEl}
         </ScrollAnimate>
       </div>
+      {/* Rive overlay layers — painted above content (clicks pass through) */}
+      {riveOverlayLayers.map((layer, i) => (
+        <SectionRiveLayer key={`rive-ov-${i}`} layer={layer} placement="overlay" />
+      ))}
     </section>
   )
 }
