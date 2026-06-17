@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import type { ReactNode } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -60,6 +61,42 @@ function serviceTitle(s: CMSService | string): string | null {
   return typeof s === 'string' ? null : (s.title ?? null)
 }
 
+/**
+ * One framed band of the page, matching the bracketed page frame:
+ * the first band uses the `--top` tier (rounded top + side rails), the rest use
+ * `--center` (side rails only). The Footer closes the frame with `--bottom`.
+ */
+function FrameSection({
+  tier,
+  className = '',
+  children,
+}: {
+  tier: 'top' | 'center'
+  className?: string
+  children: ReactNode
+}) {
+  return (
+    <div className="site-shell">
+      <div className={`section-container section-container--${tier} ${className}`.trim()}>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+function Fact({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div>
+      <dt className="font-sans text-xs font-bold uppercase tracking-widest text-kblack-400">
+        {label}
+      </dt>
+      <dd className="mt-1.5 font-display text-lg uppercase leading-tight">{children}</dd>
+    </div>
+  )
+}
+
+const PADX = 'px-6 md:px-12'
+
 export default async function ProjectPage({ params }: RouteParams) {
   const { slug } = await params
   const project: CMSProject | null = await getProject(slug)
@@ -74,9 +111,9 @@ export default async function ProjectPage({ params }: RouteParams) {
     .filter((g) => g.url)
 
   return (
-    <article className="pb-24">
-      {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <header className="site-shell pt-10 md:pt-14">
+    <article className="pt-10 md:pt-12">
+      {/* ── Hero band (frame top) ────────────────────────────────────────── */}
+      <FrameSection tier="top" className={`${PADX} pt-10 pb-12 md:pt-12 md:pb-14`}>
         <Link
           href="/#works"
           className="inline-flex items-center gap-2 font-sans text-sm font-bold uppercase tracking-wide text-kblack-400 transition-colors hover:text-kred-500"
@@ -84,7 +121,7 @@ export default async function ProjectPage({ params }: RouteParams) {
           <span aria-hidden="true">←</span> Back to work
         </Link>
 
-        <div className="mt-6 flex flex-wrap items-center gap-3">
+        <div className="mt-7 flex flex-wrap items-center gap-3">
           {categoryLabel && (
             <span className="bg-kred-500 px-3 py-1 font-display text-xs font-bold uppercase tracking-widest text-white">
               {categoryLabel}
@@ -95,80 +132,32 @@ export default async function ProjectPage({ params }: RouteParams) {
           </span>
         </div>
 
-        <h1 className="mt-5 max-w-[16ch] font-display text-5xl font-bold uppercase leading-[0.95] md:text-7xl">
+        <h1 className="mt-5 max-w-[18ch] font-display text-5xl font-bold uppercase leading-[0.92] md:text-7xl">
           {project.title}
         </h1>
 
         {project.summary && (
-          <p className="mt-6 max-w-3xl font-sans text-xl leading-relaxed text-kblack-500 md:text-2xl">
+          <p className="mt-6 max-w-2xl font-sans text-xl leading-relaxed text-kblack-500 md:text-2xl">
             {project.summary}
           </p>
         )}
-      </header>
 
-      {/* ── Cover image ──────────────────────────────────────────────────── */}
-      {cover && (
-        <div className="site-shell mt-10">
-          <div className="overflow-hidden rounded-2xl border-[3px] border-kblack-500">
-            <Image
-              src={cover}
-              alt={project.title}
-              width={1920}
-              height={1080}
-              priority
-              className="h-auto w-full object-cover"
-            />
-          </div>
-        </div>
-      )}
-
-      {/* ── Body + meta sidebar ──────────────────────────────────────────── */}
-      <div className="site-shell mt-12 grid grid-cols-1 gap-12 lg:grid-cols-[1fr_18rem] lg:gap-16">
-        <div className="order-2 lg:order-1">
-          {bodyHTML ? (
-            <div className="case-study-content" dangerouslySetInnerHTML={{ __html: bodyHTML }} />
-          ) : (
-            <p className="font-sans text-lg text-kblack-400">
-              The full case study for this project is coming soon.
-            </p>
-          )}
-        </div>
-
-        {/* Meta rail */}
-        <aside className="order-1 lg:order-2">
-          <dl className="flex flex-col gap-5 border-t-[3px] border-kblack-500 pt-5">
-            <div>
-              <dt className="font-sans text-xs font-bold uppercase tracking-widest text-kblack-400">
-                Client
-              </dt>
-              <dd className="mt-1 font-display text-lg uppercase">{project.client}</dd>
-            </div>
-            {project.role && (
-              <div>
-                <dt className="font-sans text-xs font-bold uppercase tracking-widest text-kblack-400">
-                  Role
-                </dt>
-                <dd className="mt-1 font-sans text-base">{project.role}</dd>
-              </div>
-            )}
-            {project.timeline && (
-              <div>
-                <dt className="font-sans text-xs font-bold uppercase tracking-widest text-kblack-400">
-                  Timeline
-                </dt>
-                <dd className="mt-1 font-sans text-base">{project.timeline}</dd>
-              </div>
-            )}
+        {/* Facts strip */}
+        {(project.role || project.timeline || services.length > 0 || project.projectUrl) && (
+          <dl className="mt-9 grid grid-cols-2 gap-x-6 gap-y-6 border-t-[3px] border-kblack-500 pt-6 md:grid-cols-4">
+            <Fact label="Client">{project.client}</Fact>
+            {project.role && <Fact label="Role">{project.role}</Fact>}
+            {project.timeline && <Fact label="Timeline">{project.timeline}</Fact>}
             {services.length > 0 && (
               <div>
                 <dt className="font-sans text-xs font-bold uppercase tracking-widest text-kblack-400">
                   Services
                 </dt>
-                <dd className="mt-1 flex flex-wrap gap-2">
+                <dd className="mt-2 flex flex-wrap gap-1.5">
                   {services.map((s) => (
                     <span
                       key={s}
-                      className="border-[2px] border-kblack-500 px-2 py-0.5 font-sans text-sm"
+                      className="border-[2px] border-kblack-500 px-2 py-0.5 font-sans text-xs"
                     >
                       {s}
                     </span>
@@ -176,65 +165,106 @@ export default async function ProjectPage({ params }: RouteParams) {
                 </dd>
               </div>
             )}
-            {project.projectUrl && (
-              <div>
-                <dt className="font-sans text-xs font-bold uppercase tracking-widest text-kblack-400">
-                  Live
-                </dt>
-                <dd className="mt-1">
-                  <a
-                    href={project.projectUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-display text-lg uppercase text-kred-500 underline"
-                  >
-                    Visit site ↗
-                  </a>
-                </dd>
-              </div>
-            )}
           </dl>
-        </aside>
-      </div>
+        )}
+
+        {project.projectUrl && (
+          <a
+            href={project.projectUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-8 inline-block border-[3px] border-kblack-500 px-6 py-2.5 font-display text-lg uppercase transition-colors hover:bg-kblack-500 hover:text-white"
+          >
+            Visit live site ↗
+          </a>
+        )}
+      </FrameSection>
+
+      {/* ── Cover image (kept to a calm banner height) ───────────────────── */}
+      {cover && (
+        <FrameSection tier="center" className={`${PADX} py-8 md:py-10`}>
+          <div className="overflow-hidden rounded-xl border-[3px] border-kblack-500">
+            <Image
+              src={cover}
+              alt={project.title}
+              width={1600}
+              height={760}
+              priority
+              sizes="(max-width: 1440px) 96vw, 1440px"
+              className="aspect-[16/7] w-full object-cover"
+            />
+          </div>
+        </FrameSection>
+      )}
+
+      {/* ── Case-study body ──────────────────────────────────────────────── */}
+      <FrameSection tier="center" className={`${PADX} py-12 md:py-16`}>
+        {bodyHTML ? (
+          <div className="mx-auto max-w-[68ch]">
+            <p className="mb-8 font-sans text-xs font-bold uppercase tracking-widest text-kred-500">
+              The case study
+            </p>
+            <div className="case-study-content" dangerouslySetInnerHTML={{ __html: bodyHTML }} />
+          </div>
+        ) : (
+          <p className="mx-auto max-w-[68ch] font-sans text-lg text-kblack-400">
+            The full case study for this project is coming soon.
+          </p>
+        )}
+      </FrameSection>
 
       {/* ── Gallery ──────────────────────────────────────────────────────── */}
       {gallery.length > 0 && (
-        <div className="site-shell mt-16 grid grid-cols-1 gap-6 md:grid-cols-2">
-          {gallery.map((g, i) => (
-            <figure
-              key={i}
-              className="overflow-hidden rounded-2xl border-[3px] border-kblack-500"
-            >
-              <Image
-                src={g.url as string}
-                alt={g.caption || `${project.title} — image ${i + 1}`}
-                width={960}
-                height={640}
-                loading="lazy"
-                className="h-auto w-full object-cover"
-              />
-              {g.caption && (
-                <figcaption className="border-t-[3px] border-kblack-500 px-4 py-2 font-sans text-sm text-kblack-400">
-                  {g.caption}
-                </figcaption>
-              )}
-            </figure>
-          ))}
-        </div>
+        <FrameSection tier="center" className={`${PADX} py-10 md:py-12`}>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            {gallery.map((g, i) => (
+              <figure
+                key={i}
+                className="overflow-hidden rounded-xl border-[3px] border-kblack-500"
+              >
+                <Image
+                  src={g.url as string}
+                  alt={g.caption || `${project.title} — image ${i + 1}`}
+                  width={960}
+                  height={640}
+                  loading="lazy"
+                  sizes="(max-width: 768px) 96vw, 720px"
+                  className="aspect-[3/2] w-full object-cover"
+                />
+                {g.caption && (
+                  <figcaption className="border-t-[3px] border-kblack-500 px-4 py-2.5 font-sans text-sm text-kblack-400">
+                    {g.caption}
+                  </figcaption>
+                )}
+              </figure>
+            ))}
+          </div>
+        </FrameSection>
       )}
 
-      {/* ── CTA ──────────────────────────────────────────────────────────── */}
-      <div className="site-shell mt-20 border-t-[3px] border-kblack-500 pt-10 text-center">
-        <p className="font-display text-3xl font-bold uppercase md:text-5xl">
+      {/* ── Closing CTA (last band — no bottom border; Footer closes the frame) ── */}
+      <FrameSection tier="center" className={`${PADX} py-16 text-center md:py-20`}>
+        <p className="font-display text-sm uppercase tracking-widest text-kred-500">
+          Let&apos;s build the next one
+        </p>
+        <p className="mx-auto mt-4 max-w-[20ch] font-display text-4xl font-bold uppercase leading-[0.95] md:text-6xl">
           Have a project in mind?
         </p>
-        <Link
-          href="/contact"
-          className="mt-6 inline-block border-[3px] border-kred-500 bg-kred-500 px-8 py-3 font-display text-xl uppercase text-white transition-colors hover:bg-kred-700 hover:border-kred-700"
-        >
-          Start a project
-        </Link>
-      </div>
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+          <Link
+            href="/contact"
+            className="inline-block border-[3px] border-kred-500 bg-kred-500 px-8 py-3 font-display text-xl uppercase text-white transition-colors hover:border-kred-700 hover:bg-kred-700"
+          >
+            Start a project
+          </Link>
+          <Link
+            href="/#works"
+            className="inline-block border-[3px] border-kblack-500 px-8 py-3 font-display text-xl uppercase transition-colors hover:bg-kblack-500 hover:text-white"
+          >
+            More work
+          </Link>
+        </div>
+      </FrameSection>
     </article>
   )
 }
