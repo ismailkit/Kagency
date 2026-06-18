@@ -54,6 +54,32 @@ export async function POST(req: NextRequest) {
       collection: 'contact-submissions',
       data: { name, email, company: company ?? '', message },
     })
+
+    // Notify the inbox (best-effort — never block the response on email).
+    const to = process.env.CONTACT_TO || 'submissions@kagency.dev'
+    const esc = (s: string) =>
+      s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    try {
+      await payload.sendEmail({
+        to,
+        replyTo: email,
+        subject: `New contact form submission — ${name}`,
+        html: `
+          <h2>New contact form submission</h2>
+          <p><strong>Name:</strong> ${esc(name)}</p>
+          <p><strong>Email:</strong> ${esc(email)}</p>
+          <p><strong>Company:</strong> ${esc(company || '—')}</p>
+          <p><strong>Message:</strong></p>
+          <p style="white-space:pre-wrap">${esc(message)}</p>
+        `,
+        text: `New contact form submission\n\nName: ${name}\nEmail: ${email}\nCompany: ${
+          company || '—'
+        }\n\nMessage:\n${message}`,
+      })
+    } catch (mailErr) {
+      console.error('[contact route] email notification failed:', mailErr)
+    }
+
     return NextResponse.json({ ok: true }, { status: 201 })
   } catch (err) {
     console.error('[contact route] Payload create failed:', err)

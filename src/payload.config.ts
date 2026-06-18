@@ -1,4 +1,5 @@
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
+import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { seoPlugin } from '@payloadcms/plugin-seo'
 import type { GenerateTitle, GenerateDescription, GenerateURL } from '@payloadcms/plugin-seo/types'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
@@ -60,6 +61,24 @@ export default buildConfig({
   db: mongooseAdapter({
     url: process.env.DATABASE_URL || '',
   }),
+  // SMTP email (nodemailer). Only enabled when SMTP_HOST is configured — otherwise
+  // Payload falls back to logging emails to the console, so the app still runs
+  // without credentials. Submissions are always saved regardless of email.
+  email: process.env.SMTP_HOST
+    ? nodemailerAdapter({
+        defaultFromName: process.env.EMAIL_FROM_NAME || 'Kagency',
+        defaultFromAddress: process.env.EMAIL_FROM || 'no-reply@kagency.dev',
+        transportOptions: {
+          host: process.env.SMTP_HOST,
+          port: Number(process.env.SMTP_PORT || 587),
+          secure: process.env.SMTP_SECURE === 'true',
+          auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
+          },
+        },
+      })
+    : undefined,
   cors: allowedOrigins,
   csrf: allowedOrigins,
   sharp,

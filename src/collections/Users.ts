@@ -5,7 +5,12 @@ export const Users: CollectionConfig = {
   admin: {
     useAsTitle: 'email',
   },
-  auth: true,
+  // useAPIKey lets a user hold a static API key for programmatic publishing via the
+  // REST API (Authorization: "users API-Key <key>"). Generate one per user in the
+  // admin (Account → Enable API Key). The key inherits that user's role/access.
+  auth: {
+    useAPIKey: true,
+  },
   fields: [
     {
       name: 'name',

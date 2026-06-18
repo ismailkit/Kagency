@@ -191,6 +191,20 @@ body {
   font-family: var(--font-display);
 }
 
+/* ── Contact form fields (colours driven by CMS via CSS variables) ────────── */
+.cf-field {
+  border-color: var(--cf-border, #242424);
+  color: var(--cf-text, #242424);
+  background: transparent;
+}
+.cf-field::placeholder {
+  color: color-mix(in srgb, var(--cf-text, #242424) 55%, transparent);
+}
+.cf-field:focus {
+  border-color: var(--cf-accent, #ed1d22);
+  outline: none;
+}
+
 /* ── Case-study rich-text body (Projects single page) ─────────────────────── */
 .case-study-content {
   font-family: var(--font-sans);

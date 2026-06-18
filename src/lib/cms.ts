@@ -224,6 +224,12 @@ export type CMSContentBlock =
       title: string
       subtitle?: import('./richtext').RichTextContent
       paddingX?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
+      formAlign?: 'left' | 'center' | 'right'
+      formSubmitLabel?: string
+      formAccentColor?: string
+      formButtonTextColor?: string
+      formBorderColor?: string
+      formTextColor?: string
     } & SA<'title'> &
       SA<'subtitle'> &
       SA<'content'>)

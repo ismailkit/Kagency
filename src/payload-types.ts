@@ -141,6 +141,9 @@ export interface User {
   role: 'admin' | 'editor';
   updatedAt: string;
   createdAt: string;
+  enableAPIKey?: boolean | null;
+  apiKey?: string | null;
+  apiKeyIndex?: string | null;
   email: string;
   resetPasswordToken?: string | null;
   resetPasswordExpiration?: string | null;
@@ -924,6 +927,24 @@ export interface Page {
                 [k: string]: unknown;
               } | null;
               paddingX?: ('none' | 'sm' | 'md' | 'lg' | 'xl') | null;
+              formAlign?: ('left' | 'center' | 'right') | null;
+              formSubmitLabel?: string | null;
+              /**
+               * Button background + field focus. Hex e.g. #ed1d22.
+               */
+              formAccentColor?: string | null;
+              /**
+               * Hex e.g. #ffffff.
+               */
+              formButtonTextColor?: string | null;
+              /**
+               * Hex e.g. #242424.
+               */
+              formBorderColor?: string | null;
+              /**
+               * Hex e.g. #242424.
+               */
+              formTextColor?: string | null;
               titleAnim?: boolean | null;
               titleAnimType?:
                 | (
@@ -1913,6 +1934,9 @@ export interface UsersSelect<T extends boolean = true> {
   role?: T;
   updatedAt?: T;
   createdAt?: T;
+  enableAPIKey?: T;
+  apiKey?: T;
+  apiKeyIndex?: T;
   email?: T;
   resetPasswordToken?: T;
   resetPasswordExpiration?: T;
@@ -2218,6 +2242,12 @@ export interface PagesSelect<T extends boolean = true> {
                           title?: T;
                           subtitle?: T;
                           paddingX?: T;
+                          formAlign?: T;
+                          formSubmitLabel?: T;
+                          formAccentColor?: T;
+                          formButtonTextColor?: T;
+                          formBorderColor?: T;
+                          formTextColor?: T;
                           titleAnim?: T;
                           titleAnimType?: T;
                           titleAnimEasing?: T;

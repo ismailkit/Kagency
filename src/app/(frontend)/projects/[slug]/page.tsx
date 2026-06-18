@@ -111,14 +111,36 @@ export default async function ProjectPage({ params }: RouteParams) {
     .filter((g) => g.url)
 
   return (
-    <article className="pt-10 md:pt-12">
+    <article className="pt-0">
       {/* ── Hero band (frame top) ────────────────────────────────────────── */}
       <FrameSection tier="top" className={`${PADX} pt-10 pb-12 md:pt-12 md:pb-14`}>
         <Link
-          href="/#works"
-          className="inline-flex items-center gap-2 font-sans text-sm font-bold uppercase tracking-wide text-kblack-400 transition-colors hover:text-kred-500"
+          href="/the-agency"
+          className="flex items-center gap-2 font-sans text-sm font-bold uppercase tracking-wide text-kblack-400 transition-colors hover:text-kred-500"
         >
-          <span aria-hidden="true">←</span> Back to work
+          <span aria-hidden="true">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 20 20"
+              fill="none"
+              aria-hidden="true"
+              className="text-kred-500 transition-transform group-hover:translate-x-1.5"
+              xmlns="http://www.w3.org/2000/svg"
+              style={{ transform: 'scaleX(-1)' }}
+            >
+              <path
+                d="M10 19.25C4.89137 19.25 0.75 15.1086 0.75 10C0.75 4.89137 4.89137 0.75 10 0.75C15.1086 0.75 19.25 4.89137 19.25 10C19.25 15.1086 15.1086 19.25 10 19.25Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
+              <path
+                d="M10 6L9.295 6.705L12.085 9.5H6V10.5H12.085L9.295 13.295L10 14L14 10L10 6Z"
+                fill="currentColor"
+              />
+            </svg>
+          </span>
+          <span style={{ textBoxTrim: 'trim-both' }}>Back to work</span>
         </Link>
 
         <div className="mt-7 flex flex-wrap items-center gap-3">
@@ -218,10 +240,7 @@ export default async function ProjectPage({ params }: RouteParams) {
         <FrameSection tier="center" className={`${PADX} py-10 md:py-12`}>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             {gallery.map((g, i) => (
-              <figure
-                key={i}
-                className="overflow-hidden rounded-xl border-[3px] border-kblack-500"
-              >
+              <figure key={i} className="overflow-hidden rounded-xl border-[3px] border-kblack-500">
                 <Image
                   src={g.url as string}
                   alt={g.caption || `${project.title} — image ${i + 1}`}

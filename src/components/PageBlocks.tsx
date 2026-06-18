@@ -227,8 +227,15 @@ function BlockContent({
         contentAnimDelay={block.contentAnimDelay}
         paddingX={block.paddingX}
       >
-        <div className="mx-auto max-w-3xl">
-          <ContactForm />
+        <div className="mx-auto max-w-3xl" style={{ textAlign: block.formAlign ?? 'left' }}>
+          <ContactForm
+            align={block.formAlign}
+            submitLabel={block.formSubmitLabel}
+            accentColor={block.formAccentColor}
+            borderColor={block.formBorderColor}
+            textColor={block.formTextColor}
+            buttonTextColor={block.formButtonTextColor}
+          />
         </div>
       </PageHero>
     )

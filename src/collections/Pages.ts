@@ -2102,6 +2102,71 @@ export const Pages: CollectionConfig = {
                     {
                       type: 'collapsible' as const,
 
+                      label: 'Form styling',
+
+                      admin: { initCollapsed: true },
+
+                      fields: [
+                        {
+                          name: 'formAlign',
+                          type: 'select' as const,
+                          label: 'Text alignment',
+                          defaultValue: 'left',
+                          options: [
+                            { label: 'Left', value: 'left' },
+                            { label: 'Center', value: 'center' },
+                            { label: 'Right', value: 'right' },
+                          ],
+                        },
+                        {
+                          name: 'formSubmitLabel',
+                          type: 'text' as const,
+                          label: 'Submit button label',
+                          admin: { placeholder: 'Send Message' },
+                        },
+                        {
+                          type: 'row' as const,
+                          fields: [
+                            {
+                              name: 'formAccentColor',
+                              type: 'text' as const,
+                              label: 'Accent colour',
+                              admin: {
+                                width: '50%',
+                                description: 'Button background + field focus. Hex e.g. #ed1d22.',
+                              },
+                            },
+                            {
+                              name: 'formButtonTextColor',
+                              type: 'text' as const,
+                              label: 'Button text colour',
+                              admin: { width: '50%', description: 'Hex e.g. #ffffff.' },
+                            },
+                          ],
+                        },
+                        {
+                          type: 'row' as const,
+                          fields: [
+                            {
+                              name: 'formBorderColor',
+                              type: 'text' as const,
+                              label: 'Field border colour',
+                              admin: { width: '50%', description: 'Hex e.g. #242424.' },
+                            },
+                            {
+                              name: 'formTextColor',
+                              type: 'text' as const,
+                              label: 'Field text colour',
+                              admin: { width: '50%', description: 'Hex e.g. #242424.' },
+                            },
+                          ],
+                        },
+                      ],
+                    },
+
+                    {
+                      type: 'collapsible' as const,
+
                       label: 'Scroll animations',
 
                       admin: { initCollapsed: true },

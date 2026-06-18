@@ -1,0 +1,19 @@
+{
+  "title": "Example Case Study",
+  "client": "Acme Co",
+  "category": "brand",
+  "summary": "A short, punchy teaser shown on cards and used as the default meta description.",
+  "role": "Brand strategy · Web design & build",
+  "timeline": "2026 · 6 weeks",
+  "projectUrl": "https://example.com",
+  "featured": false,
+  "services": ["Branding"],
+  "coverImage": { "src": "https://images.unsplash.com/photo-1517292987719-0369a794ec0f", "alt": "Example cover" },
+  "gallery": [],
+  "contentMarkdown": "## The challenge\n\nDescribe the problem the client faced.\n\n## The approach\n\n- What we did\n- How we did it\n\n## The results\n\n> A measurable, quotable outcome.\n",
+  "meta": {
+    "title": "Example Case Study | Kagency",
+    "description": "How we helped Acme Co.",
+    "useCoverImage": true
+  }
+}
