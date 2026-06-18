@@ -226,6 +226,7 @@ function BlockContent({
         contentAnimDuration={block.contentAnimDuration}
         contentAnimDelay={block.contentAnimDelay}
         paddingX={block.paddingX}
+        textAlign={block.formAlign}
       >
         <div className="mx-auto max-w-3xl" style={{ textAlign: block.formAlign ?? 'left' }}>
           <ContactForm

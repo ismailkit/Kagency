@@ -27,6 +27,8 @@ type Props = {
   contentAnimDuration?: number
   contentAnimDelay?: number
   paddingX?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
+  /** Aligns the title + subtitle (and cascades to children). Default 'left'. */
+  textAlign?: 'left' | 'center' | 'right'
 }
 
 export function PageHero({
@@ -49,9 +51,15 @@ export function PageHero({
   contentAnimDuration,
   contentAnimDelay,
   paddingX = 'md' as const,
+  textAlign = 'left',
 }: Props) {
+  const alignClass =
+    textAlign === 'center' ? 'text-center' : textAlign === 'right' ? 'text-right' : 'text-left'
+  // Position the max-width subtitle box according to the alignment.
+  const subtitleAlign =
+    textAlign === 'center' ? 'mx-auto' : textAlign === 'right' ? 'ml-auto' : ''
   return (
-    <div className={`${pxClass[paddingX]} py-14 md:py-16`}>
+    <div className={`${pxClass[paddingX]} py-14 md:py-16 ${alignClass}`}>
       <ScrollAnimate
         enabled={titleAnim}
         type={titleAnimType}
@@ -71,7 +79,7 @@ export function PageHero({
           duration={subtitleAnimDuration}
           delay={subtitleAnimDelay}
           as="div"
-          className="mt-8 max-w-3xl font-sans text-2xl leading-tight md:text-4xl richtext"
+          className={`mt-8 max-w-3xl ${subtitleAlign} font-sans text-2xl leading-tight md:text-4xl richtext`}
         >
           <span dangerouslySetInnerHTML={{ __html: richTextToHTML(subtitle) }} />
         </ScrollAnimate>
