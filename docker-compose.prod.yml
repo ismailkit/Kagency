@@ -18,10 +18,14 @@ services:
     working_dir: /app
     # NOTE: build tooling (tailwind/postcss/next) lives in devDependencies, so we must
     # install with --include=dev. Do NOT set NODE_ENV=production here or npm ci omits them.
+    # Build only when there is no build yet (.next empty). Deploys build IN-PLACE
+    # (`docker exec … npm run build`) while the old server is still serving, so
+    # data-dependent pages prerender against a live API instead of 404. A plain
+    # restart/reboot then reuses that good build instead of cold-rebuilding.
     command: >
       sh -c "
       if [ ! -d node_modules ] || [ -z \"$$(ls -A node_modules 2>/dev/null)\" ]; then npm ci --include=dev; fi;
-      npm run build;
+      if [ ! -d .next ] || [ -z \"$$(ls -A .next 2>/dev/null)\" ]; then npm run build; fi;
       npm run start -- --hostname 0.0.0.0 --port 3000"
     restart: unless-stopped
     env_file:
