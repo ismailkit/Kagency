@@ -116,6 +116,11 @@ export type BackgroundLayer =
       riveScrubStart?: string
       riveScrubEnd?: string
       riveScrubStrength?: number
+      /** Playback speed multiplier (1 = as authored). */
+      riveSpeed?: number
+      riveBindEnabled?: boolean
+      /** JSON blob written by the admin Rive data-properties field. */
+      riveBindings?: { bindings?: unknown[]; properties?: unknown[] } | null
       riveLayerPosition?: 'background' | 'overlay'
       opacity?: number
       blendMode?: string
@@ -416,6 +421,11 @@ export type CMSContentBlock =
       animation?: string
       stateMachine?: string
       mode?: 'autoplay' | 'loop'
+      /** Playback speed multiplier (1 = as authored). */
+      speed?: number
+      riveBindEnabled?: boolean
+      /** JSON blob written by the admin Rive data-properties field. */
+      riveBindings?: { bindings?: unknown[]; properties?: unknown[] } | null
       fit?: 'contain' | 'cover' | 'fill' | 'fitWidth' | 'fitHeight' | 'none'
       alignment?:
         | 'center'

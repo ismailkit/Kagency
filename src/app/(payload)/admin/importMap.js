@@ -1,3 +1,6 @@
+import { RiveArtboardSelect as RiveArtboardSelect_a6e0404730ed9a0f2da5d2a74de9b281 } from '../../../admin/rive/RiveNameSelect'
+import { RiveStateMachineSelect as RiveStateMachineSelect_a6e0404730ed9a0f2da5d2a74de9b281 } from '../../../admin/rive/RiveNameSelect'
+import { RiveBindingsField as RiveBindingsField_3fb4d9f62253989a58a4beb9aeacde45 } from '../../../admin/rive/RiveBindingsField'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { LexicalDiffComponent as LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -30,6 +33,9 @@ import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 
 /** @type import('payload').ImportMap */
 export const importMap = {
+  "/admin/rive/RiveNameSelect#RiveArtboardSelect": RiveArtboardSelect_a6e0404730ed9a0f2da5d2a74de9b281,
+  "/admin/rive/RiveNameSelect#RiveStateMachineSelect": RiveStateMachineSelect_a6e0404730ed9a0f2da5d2a74de9b281,
+  "/admin/rive/RiveBindingsField#RiveBindingsField": RiveBindingsField_3fb4d9f62253989a58a4beb9aeacde45,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#LexicalDiffComponent": LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e,

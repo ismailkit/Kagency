@@ -314,9 +314,26 @@ export interface Page {
               )
             | null;
           /**
+           * Playback speed multiplier for the animation itself. 1 = as authored in Rive, 0.5 = half speed, 2 = double. Applies to both timeline animations and state machines.
+           */
+          riveSpeed?: number | null;
+          /**
            * Background sits behind the section content. Overlay paints the animation on top of the content (clicks still pass through).
            */
           riveLayerPosition?: ('background' | 'overlay') | null;
+          /**
+           * Inspects the uploaded .riv and lists its ViewModel properties below, each settable to a fixed value or driven from scroll.
+           */
+          riveBindEnabled?: boolean | null;
+          riveBindings?:
+            | {
+                [k: string]: unknown;
+              }
+            | unknown[]
+            | string
+            | number
+            | boolean
+            | null;
           riveScrubEnabled?: boolean | null;
           /**
            * Name of the Number/Boolean to drive from scroll — either a state machine input OR a data-binding (ViewModel) property. Both are tried, so it works whichever way your .riv was built.
@@ -473,9 +490,26 @@ export interface Page {
               )
             | null;
           /**
+           * Playback speed multiplier for the animation itself. 1 = as authored in Rive, 0.5 = half speed, 2 = double. Applies to both timeline animations and state machines.
+           */
+          riveSpeed?: number | null;
+          /**
            * Background sits behind the section content. Overlay paints the animation on top of the content (clicks still pass through).
            */
           riveLayerPosition?: ('background' | 'overlay') | null;
+          /**
+           * Inspects the uploaded .riv and lists its ViewModel properties below, each settable to a fixed value or driven from scroll.
+           */
+          riveBindEnabled?: boolean | null;
+          riveBindings?:
+            | {
+                [k: string]: unknown;
+              }
+            | unknown[]
+            | string
+            | number
+            | boolean
+            | null;
           riveScrubEnabled?: boolean | null;
           /**
            * Name of the Number/Boolean to drive from scroll — either a state machine input OR a data-binding (ViewModel) property. Both are tried, so it works whichever way your .riv was built.
@@ -1376,6 +1410,23 @@ export interface Page {
                */
               stateMachine?: string | null;
               mode?: ('autoplay' | 'loop') | null;
+              /**
+               * Playback speed multiplier. 1 = as authored in Rive, 0.5 = half speed, 2 = double. Applies to both timeline animations and state machines.
+               */
+              speed?: number | null;
+              /**
+               * Inspects the uploaded .riv and lists its ViewModel properties below, each settable to a fixed value or driven from scroll.
+               */
+              riveBindEnabled?: boolean | null;
+              riveBindings?:
+                | {
+                    [k: string]: unknown;
+                  }
+                | unknown[]
+                | string
+                | number
+                | boolean
+                | null;
               fit?: ('contain' | 'cover' | 'fill' | 'fitWidth' | 'fitHeight' | 'none') | null;
               alignment?:
                 | (
@@ -2044,7 +2095,10 @@ export interface PagesSelect<T extends boolean = true> {
               riveStateMachine?: T;
               riveFit?: T;
               riveAlignment?: T;
+              riveSpeed?: T;
               riveLayerPosition?: T;
+              riveBindEnabled?: T;
+              riveBindings?: T;
               riveScrubEnabled?: T;
               riveScrubProperty?: T;
               riveScrubInputType?: T;
@@ -2103,7 +2157,10 @@ export interface PagesSelect<T extends boolean = true> {
                     riveStateMachine?: T;
                     riveFit?: T;
                     riveAlignment?: T;
+                    riveSpeed?: T;
                     riveLayerPosition?: T;
+                    riveBindEnabled?: T;
+                    riveBindings?: T;
                     riveScrubEnabled?: T;
                     riveScrubProperty?: T;
                     riveScrubInputType?: T;
@@ -2388,6 +2445,9 @@ export interface PagesSelect<T extends boolean = true> {
                           animation?: T;
                           stateMachine?: T;
                           mode?: T;
+                          speed?: T;
+                          riveBindEnabled?: T;
+                          riveBindings?: T;
                           fit?: T;
                           alignment?: T;
                           aspect?: T;

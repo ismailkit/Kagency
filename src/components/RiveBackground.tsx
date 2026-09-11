@@ -4,6 +4,8 @@ import { Alignment, Fit, Layout, useRive } from '@rive-app/react-canvas'
 import { useEffect, useRef } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { useRivePlaybackSpeed } from '@/lib/riveSpeed'
+import { useRiveBindings, type RiveBinding } from '@/lib/rive/bindings'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -68,6 +70,17 @@ export interface RiveBackgroundProps {
   opacity?: number
   /** CSS mix-blend-mode. Default 'normal'. */
   blendMode?: string
+  /**
+   * Playback speed multiplier (1 = as authored, 0.5 = half speed, 2 = double).
+   * Applies to linear animations and state machines alike.
+   */
+  speed?: number
+  /**
+   * Data-binding (ViewModel) values configured in the CMS — static values and
+   * per-property scroll drivers. Independent of `scrub`, which remains the
+   * single-property legacy path.
+   */
+  bindings?: RiveBinding[]
   /** Scroll-driven Rive input scrub config. */
   scrub?: RiveBgScrollScrub
 }
@@ -122,6 +135,8 @@ export function RiveBackground({
   alignment = 'center',
   opacity = 1,
   blendMode,
+  speed,
+  bindings,
   scrub,
 }: RiveBackgroundProps) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -140,6 +155,12 @@ export function RiveBackground({
       alignment: ALIGN_MAP[alignment] ?? Alignment.Center,
     }),
   })
+
+  // ── Playback speed ──────────────────────────────────────────────────────
+  useRivePlaybackSpeed(rive, speed)
+
+  // ── CMS-configured data bindings ────────────────────────────────────────
+  useRiveBindings(rive, bindings, containerRef)
 
   // ── Visibility gating — pause when off-screen ───────────────────────────
   useEffect(() => {

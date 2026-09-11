@@ -11,6 +11,11 @@
  * Internal content is driven upward via translateY. On release the page continues.
  *
  * `scrubDuration` adds GSAP lag so motion is smooth rather than rigid.
+ *
+ * Layout note: the pinned element (sectionRef) must never carry a transform.
+ * The card scale lives on an inner wrapper (cardRef) instead — a transform on
+ * the pinned element itself both fights GSAP's own writes during the pin and,
+ * if it survives into the pinned span, renders the "fullscreen" section at 90%.
  */
 
 import gsap from 'gsap'
@@ -43,6 +48,10 @@ const CARD_SCALE = 0.9 // 90% size — 5% gap each side
 const CARD_RADIUS = 14 // px border-radius on the card
 const CARD_RING = 0.12 // rgba alpha for inset ring border
 
+function ringShadow(alpha: number) {
+  return alpha > 0.001 ? `inset 0 0 0 1px rgba(255,255,255,${alpha.toFixed(3)})` : 'none'
+}
+
 export function ScrollJackShell({
   children,
   bgSlot,
@@ -52,47 +61,56 @@ export function ScrollJackShell({
   className = '',
 }: Props) {
   const sectionRef = useRef<HTMLDivElement>(null)
+  const cardRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const section = sectionRef.current
+    const card = cardRef.current
     const content = contentRef.current
-    if (!section || !content) return
+    if (!section || !card || !content) return
 
     // ── Phase 1: card → fullscreen ────────────────────────────────────────
-    // The section is always h-screen in layout; transform:scale makes it look
-    // like an inset card without affecting the scroll positions GSAP measures.
-    section.style.transform = `scale(${CARD_SCALE})`
-    section.style.borderRadius = `${CARD_RADIUS}px`
-    section.style.transformOrigin = 'center top'
-    section.style.boxShadow = `inset 0 0 0 1px rgba(255,255,255,${CARD_RING})`
-
-    const expandTrigger = ScrollTrigger.create({
-      trigger: section,
-      start: 'top 90%',
-      end: 'top top',
-      scrub: true,
-      onUpdate(self) {
-        const p = self.progress
-        const scale = CARD_SCALE + (1 - CARD_SCALE) * p
-        const radius = CARD_RADIUS * (1 - p)
-        const alpha = (CARD_RING * (1 - p)).toFixed(3)
-        section.style.transform = `scale(${scale})`
-        section.style.borderRadius = `${radius}px`
-        section.style.boxShadow = `inset 0 0 0 1px rgba(255,255,255,${alpha})`
-      },
-      onLeave() {
-        // Fully expanded — clear all card styles so nothing overrides the pin
-        section.style.transform = ''
-        section.style.borderRadius = ''
-        section.style.boxShadow = ''
-        section.style.transformOrigin = ''
-      },
-      onEnterBack() {
-        // Restore transform-origin when scrolling back up into the expand zone
-        section.style.transformOrigin = 'center top'
-      },
+    // Set through GSAP, not raw style writes: GSAP caches an element's transform
+    // state, and writing transformOrigin behind its back desyncs that cache.
+    gsap.set(card, {
+      scale: CARD_SCALE,
+      borderRadius: CARD_RADIUS,
+      transformOrigin: 'center top',
     })
+    card.style.boxShadow = ringShadow(CARD_RING)
+
+    // The ring alpha rides along with the tween's progress. onRefresh matters
+    // most: it is the callback that fires when the page is loaded already
+    // scrolled into the section, where scroll-crossing callbacks never run.
+    const setRing = (progress: number) => {
+      card.style.boxShadow = ringShadow(CARD_RING * (1 - progress))
+    }
+
+    // A real scrubbed tween rather than hand-rolled onUpdate/onLeave callbacks:
+    // GSAP renders a scrubbed tween at the correct progress for ANY scroll
+    // position, including a page loaded already scrolled past the end. The old
+    // callback-driven state stayed stuck at the initial card scale in that case,
+    // which is what left the "fullscreen" pinned section rendering at 90%.
+    const cardTween = gsap.fromTo(
+      card,
+      { scale: CARD_SCALE, borderRadius: CARD_RADIUS },
+      {
+        scale: 1,
+        borderRadius: 0,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: section,
+          start: 'top 90%',
+          end: 'top top',
+          scrub: true,
+          invalidateOnRefresh: true,
+          onUpdate: (self) => setRing(self.progress),
+          onToggle: (self) => setRing(self.progress),
+          onRefresh: (self) => setRing(self.progress),
+        },
+      },
+    )
 
     // ── Phase 2: pin + scroll-jack ────────────────────────────────────────
     const overflowY = Math.max(0, content.scrollHeight - window.innerHeight)
@@ -143,38 +161,44 @@ export function ScrollJackShell({
     window.addEventListener('resize', onResize)
 
     return () => {
-      expandTrigger.kill()
+      cardTween.scrollTrigger?.kill()
+      cardTween.kill()
       pinTrigger.kill()
       tween.kill()
       fadeTween.kill()
       cancelAnimationFrame(rafId)
       window.removeEventListener('resize', onResize)
+      gsap.set(card, { clearProps: 'transform,transformOrigin,borderRadius' })
+      card.style.boxShadow = ''
     }
   }, [extraScroll, scrubDuration])
 
   return (
-    // This div is what GSAP pins. Must be exactly viewport-sized + overflow:hidden.
-    // During Phase 1 transform:scale makes it appear as a floating card.
+    // This div is what GSAP pins. Must be exactly viewport-sized, and must stay
+    // transform-free so the pin measures and renders at the full viewport.
     <div
       ref={sectionRef}
       className={`relative w-full h-screen overflow-hidden ${className}`.trim()}
     >
-      {/* Background layers: absolute, stays in place while content translates */}
-      {bgSlot && (
-        <div className="pointer-events-none absolute inset-0 z-0" aria-hidden="true">
-          {bgSlot}
+      {/* Card wrapper: carries the entrance scale / radius / ring. */}
+      <div ref={cardRef} className="absolute inset-0 overflow-hidden">
+        {/* Background layers: absolute, stays in place while content translates */}
+        {bgSlot && (
+          <div className="pointer-events-none absolute inset-0 z-0" aria-hidden="true">
+            {bgSlot}
+          </div>
+        )}
+        {/* Content: translateY applied here to "scroll" it upward */}
+        <div ref={contentRef} className="relative z-1" style={{ willChange: 'transform' }}>
+          {children}
         </div>
-      )}
-      {/* Content: translateY applied here to "scroll" it upward */}
-      <div ref={contentRef} className="relative z-1" style={{ willChange: 'transform' }}>
-        {children}
+        {/* Overlay layers: above content, stay in place while content translates */}
+        {overlaySlot && (
+          <div className="pointer-events-none absolute inset-0 z-2" aria-hidden="true">
+            {overlaySlot}
+          </div>
+        )}
       </div>
-      {/* Overlay layers: above content, stay in place while content translates */}
-      {overlaySlot && (
-        <div className="pointer-events-none absolute inset-0 z-2" aria-hidden="true">
-          {overlaySlot}
-        </div>
-      )}
     </div>
   )
 }

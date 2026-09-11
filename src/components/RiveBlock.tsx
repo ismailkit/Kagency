@@ -4,6 +4,8 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Alignment, Fit, Layout, useRive } from '@rive-app/react-canvas'
 import { useEffect, useRef } from 'react'
+import { useRivePlaybackSpeed } from '@/lib/riveSpeed'
+import { useRiveBindings, type RiveBinding } from '@/lib/rive/bindings'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -71,6 +73,13 @@ export interface RiveBlockProps {
   /** State machine name */
   stateMachine?: string
   mode?: RiveMode
+  /**
+   * Playback speed multiplier (1 = as authored, 0.5 = half speed, 2 = double).
+   * Applies to linear animations and state machines alike.
+   */
+  speed?: number
+  /** Data-binding (ViewModel) values configured in the CMS. */
+  bindings?: RiveBinding[]
   fit?: RiveFit
   alignment?: RiveAlignment
   aspect?: RiveAspect
@@ -109,6 +118,8 @@ export function RiveBlock({
   animation,
   stateMachine,
   mode = 'autoplay',
+  speed,
+  bindings,
   fit = 'contain',
   alignment = 'center',
   aspect = '16/9',
@@ -128,11 +139,17 @@ export function RiveBlock({
     // autoplay: false — we gate playback via IntersectionObserver so off-screen
     // elements never waste CPU and re-plays are predictable.
     autoplay: false,
+    // Binds the artboard's default ViewModel instance so CMS data bindings have
+    // something to write to.
+    autoBind: true,
     layout: new Layout({
       fit: FIT_MAP[fit] ?? Fit.Contain,
       alignment: ALIGN_MAP[alignment] ?? Alignment.Center,
     }),
   })
+
+  useRivePlaybackSpeed(rive, speed)
+  useRiveBindings(rive, bindings, containerRef)
 
   // Viewport gating — play when ≥10 % visible, pause/stop when hidden
   useEffect(() => {

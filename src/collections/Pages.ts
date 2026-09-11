@@ -91,6 +91,8 @@ const riveBlockFields = [
 
         admin: {
           description: 'Name of the artboard to render. Leave blank for the default artboard.',
+
+          components: { Field: '/admin/rive/RiveNameSelect#RiveArtboardSelect' },
         },
       },
 
@@ -120,6 +122,8 @@ const riveBlockFields = [
 
     admin: {
       description: 'Name of the state machine to activate (optional).',
+
+      components: { Field: '/admin/rive/RiveNameSelect#RiveStateMachineSelect' },
     },
   },
 
@@ -139,6 +143,57 @@ const riveBlockFields = [
 
       { label: 'Loop', value: 'loop' },
     ],
+  },
+
+  {
+    name: 'speed',
+
+    type: 'number' as const,
+
+    label: 'Animation speed (×)',
+
+    defaultValue: 1,
+
+    min: 0.05,
+
+    max: 10,
+
+    admin: {
+      description:
+        'Playback speed multiplier. 1 = as authored in Rive, 0.5 = half speed, 2 = double. Applies to both timeline animations and state machines.',
+    },
+  },
+
+  // --- Data binding (ViewModel) ----------------------------
+
+  {
+    name: 'riveBindEnabled',
+
+    type: 'checkbox' as const,
+
+    label: 'Read data properties from the Rive file',
+
+    defaultValue: false,
+
+    admin: {
+      description:
+        'Inspects the uploaded .riv and lists its ViewModel properties below, each settable to a fixed value or driven from scroll.',
+    },
+  },
+
+  {
+    name: 'riveBindings',
+
+    type: 'json' as const,
+
+    label: 'Rive data properties',
+
+    admin: {
+      components: { Field: '/admin/rive/RiveBindingsField#RiveBindingsField' },
+
+      condition: (_: unknown, siblingData: { riveBindEnabled?: boolean }) =>
+        !!siblingData?.riveBindEnabled,
+    },
   },
 
   // --- Display ---------------------------------------------
@@ -857,6 +912,8 @@ const backgroundsField = {
           admin: {
             description: "Leave blank for the file's default artboard.",
 
+            components: { Field: '/admin/rive/RiveNameSelect#RiveArtboardSelect' },
+
             condition: (_: unknown, siblingData: { type?: string }) => siblingData?.type === 'rive',
           },
         },
@@ -871,6 +928,9 @@ const backgroundsField = {
           admin: {
             description:
               'Required to play a state machine and to drive a state machine input from scroll. Leave blank if your file animates purely via data binding (ViewModel).',
+
+            components: { Field: '/admin/rive/RiveNameSelect#RiveStateMachineSelect' },
+
             condition: (_: unknown, siblingData: { type?: string }) => siblingData?.type === 'rive',
           },
         },
@@ -934,6 +994,27 @@ const backgroundsField = {
     },
 
     {
+      name: 'riveSpeed',
+
+      type: 'number' as const,
+
+      label: 'Animation speed (×)',
+
+      defaultValue: 1,
+
+      min: 0.05,
+
+      max: 10,
+
+      admin: {
+        description:
+          'Playback speed multiplier for the animation itself. 1 = as authored in Rive, 0.5 = half speed, 2 = double. Applies to both timeline animations and state machines.',
+
+        condition: (_: unknown, siblingData: { type?: string }) => siblingData?.type === 'rive',
+      },
+    },
+
+    {
       name: 'riveLayerPosition',
 
       type: 'select' as const,
@@ -952,6 +1033,43 @@ const backgroundsField = {
           'Background sits behind the section content. Overlay paints the animation on top of the content (clicks still pass through).',
 
         condition: (_: unknown, siblingData: { type?: string }) => siblingData?.type === 'rive',
+      },
+    },
+
+    // ── Rive data binding (ViewModel) ────────────────────────────────────
+    // Reads the selected .riv file in the browser and builds a control per
+    // data-binding property it finds. Off by default — existing layers are
+    // untouched and the file is never read unless this is switched on.
+
+    {
+      name: 'riveBindEnabled',
+
+      type: 'checkbox' as const,
+
+      label: 'Read data properties from the Rive file',
+
+      defaultValue: false,
+
+      admin: {
+        description:
+          'Inspects the uploaded .riv and lists its ViewModel properties below, each settable to a fixed value or driven from scroll.',
+
+        condition: (_: unknown, siblingData: { type?: string }) => siblingData?.type === 'rive',
+      },
+    },
+
+    {
+      name: 'riveBindings',
+
+      type: 'json' as const,
+
+      label: 'Rive data properties',
+
+      admin: {
+        components: { Field: '/admin/rive/RiveBindingsField#RiveBindingsField' },
+
+        condition: (_: unknown, siblingData: { type?: string; riveBindEnabled?: boolean }) =>
+          siblingData?.type === 'rive' && !!siblingData?.riveBindEnabled,
       },
     },
 

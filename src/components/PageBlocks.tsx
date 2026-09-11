@@ -14,6 +14,7 @@ import { ApplyPageSettings } from '@/components/PageSettingsContext'
 import { ProjectsGrid } from '@/components/ProjectsGrid'
 import { RiveBlock } from '@/components/RiveBlock'
 import { RiveBackground } from '@/components/RiveBackground'
+import type { RiveBinding } from '@/lib/rive/bindings'
 import { SectionBlock } from '@/components/SectionBlock'
 import { ServicesGrid } from '@/components/ServicesGrid'
 import { TestimonialsBlock } from '@/components/TestimonialsBlock'
@@ -402,6 +403,12 @@ function BlockContent({
         animation={block.animation}
         stateMachine={block.stateMachine}
         mode={block.mode}
+        speed={block.speed}
+        bindings={
+          block.riveBindEnabled
+            ? (block.riveBindings?.bindings as RiveBinding[] | undefined)
+            : undefined
+        }
         fit={block.fit}
         alignment={block.alignment}
         aspect={block.aspect}
@@ -629,6 +636,12 @@ export function PageBlocks({
                   }
                   opacity={riveLayer.opacity as number | undefined}
                   blendMode={riveLayer.blendMode as string | undefined}
+                  speed={riveLayer.riveSpeed as number | undefined}
+                  bindings={
+                    riveLayer.riveBindEnabled
+                      ? ((riveLayer.riveBindings as { bindings?: RiveBinding[] } | null)?.bindings)
+                      : undefined
+                  }
                   scrub={
                     riveLayer.riveScrubEnabled
                       ? {

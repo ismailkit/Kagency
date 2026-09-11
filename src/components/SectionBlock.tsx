@@ -3,6 +3,7 @@ import { ScrollAnimate } from '@/components/ScrollAnimate'
 import type { AnimType, AnimEasing } from '@/components/ScrollAnimate'
 import { ScrollJackShell } from '@/components/ScrollJackShell'
 import { RiveBackground } from '@/components/RiveBackground'
+import type { RiveBinding } from '@/lib/rive/bindings'
 import { pxClass as paddingXClass } from '@/lib/spacing'
 
 export type ContainerStyle = 'normal' | 'center' | 'top' | 'bottom' | 'scroll-jack'
@@ -82,6 +83,11 @@ export type BackgroundLayer =
       riveScrubStart?: string
       riveScrubEnd?: string
       riveScrubStrength?: number
+      /** Playback speed multiplier (1 = as authored). */
+      riveSpeed?: number
+      riveBindEnabled?: boolean
+      /** JSON blob written by the admin Rive data-properties field. */
+      riveBindings?: { bindings?: RiveBinding[] } | null
       /** 'background' (behind content, default) or 'overlay' (above content). */
       riveLayerPosition?: 'background' | 'overlay'
       opacity?: number
@@ -113,6 +119,8 @@ function SectionRiveLayer({
         alignment={layer.riveAlignment ?? 'center'}
         opacity={layer.opacity}
         blendMode={layer.blendMode}
+        speed={layer.riveSpeed}
+        bindings={layer.riveBindEnabled ? layer.riveBindings?.bindings : undefined}
         scrub={
           layer.riveScrubEnabled && layer.riveScrubProperty
             ? {
