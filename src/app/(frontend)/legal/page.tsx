@@ -13,7 +13,7 @@ import {
 export const metadata: Metadata = {
   title: 'Legal',
   description:
-    'Legal information for Kagency LLC — jurisdiction, intellectual property, liability, GDPR, and service agreements.',
+    'Privacy Policy, Cookie Policy, Website Terms and Terms of Service for Kagency LLC, a New Mexico limited liability company.',
 }
 
 export default async function LegalPage() {

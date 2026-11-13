@@ -6,7 +6,9 @@
  * before any Google tag loads); this component lets the visitor grant/deny the
  * Analytics and Marketing categories and pushes the choice to gtag + dataLayer
  * so GTM and GA4 (G-15V660E572) honour it. The choice is stored in localStorage
- * so it persists and is re-applied before tags fire on the next visit.
+ * so it persists and is re-applied before tags fire on the next visit. A Global Privacy Control
+ * signal (navigator.globalPrivacyControl) counts as a refusal of marketing cookies, as the
+ * legal page promises.
  */
 
 import { useEffect, useState } from 'react'
@@ -22,7 +24,12 @@ declare global {
     gtag?: (...args: unknown[]) => void
     dataLayer?: unknown[]
   }
+  interface Navigator {
+    globalPrivacyControl?: boolean
+  }
 }
+
+const gpcOn = () => typeof navigator !== 'undefined' && navigator.globalPrivacyControl === true
 
 function toGcm(cats: Categories): GtagConsent {
   const ads = cats.marketing ? 'granted' : 'denied'
@@ -35,6 +42,7 @@ function toGcm(cats: Categories): GtagConsent {
 }
 
 function apply(cats: Categories) {
+  if (gpcOn()) cats = { ...cats, marketing: false }
   const gcm = toGcm(cats)
   window.gtag?.('consent', 'update', gcm)
   window.dataLayer?.push({ event: 'cookie_consent_update', consent: cats })
@@ -78,6 +86,7 @@ export function CookieConsent() {
   if (!mounted) return null
 
   function decide(next: Categories) {
+    if (gpcOn()) next = { ...next, marketing: false }
     apply(next)
     setCats(next)
     setHasChoice(true)
@@ -158,13 +167,15 @@ export function CookieConsent() {
               <label className="flex items-start gap-3 text-sm">
                 <input
                   type="checkbox"
-                  checked={cats.marketing}
+                  checked={cats.marketing && !gpcOn()}
+                  disabled={gpcOn()}
                   onChange={(e) => setCats((c) => ({ ...c, marketing: e.target.checked }))}
                   className="mt-1 h-4 w-4 accent-kred-500"
                 />
                 <span>
                   <span className="font-bold uppercase tracking-wide">Marketing</span> — ads
                   personalisation and remarketing.
+                  {gpcOn() && ' Off: your browser sends a Global Privacy Control signal.'}
                 </span>
               </label>
             </div>
