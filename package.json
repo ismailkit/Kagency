@@ -19,6 +19,7 @@
     "page:map": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/patch-page-demo.ts",
     "publish:schema": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node scripts/publish/schema.mjs",
     "publish:project": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node scripts/publish/project.mjs",
+    "publish:legal": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node scripts/publish/legal.mjs",
     "preseed": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/db-backup.ps1 -Tag preseed",
     "seed": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/seed.ts",
     "preseed:about": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/db-backup.ps1 -Tag preseed-about",
